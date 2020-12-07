@@ -157,7 +157,7 @@ module top_cpu
         end
       [uart_base_addr:uart_top_addr-1]:
         begin
-          timer_d = 0;
+          timer_i = 0;
           uart_i = imemory_valid;
           dram_i = 0;
           iram_i = 0;
