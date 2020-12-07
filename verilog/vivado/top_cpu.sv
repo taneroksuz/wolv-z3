@@ -257,10 +257,10 @@ module top_cpu
     uart_wdata = uart_d ? dmemory_wdata : imemory_wdata;
     uart_wstrb = uart_d ? dmemory_wstrb : imemory_wstrb;
 
-    timer_instr = iram_d ? dmemory_instr : imemory_instr;
-    timer_addr = iram_d ? dmemory_addr ^ timer_base_addr : imemory_addr ^ timer_base_addr;
-    timer_wdata = iram_d ? dmemory_wdata : imemory_wdata;
-    timer_wstrb = iram_d ? dmemory_wstrb : imemory_wstrb;
+    timer_instr = timer_d ? dmemory_instr : imemory_instr;
+    timer_addr = timer_d ? dmemory_addr ^ timer_base_addr : imemory_addr ^ timer_base_addr;
+    timer_wdata = timer_d ? dmemory_wdata : imemory_wdata;
+    timer_wstrb = timer_d ? dmemory_wstrb : imemory_wstrb;
 
     if (instr_release_type == iram_access) begin
       imemory_rdata = iram_rdata;
@@ -305,9 +305,13 @@ module top_cpu
     end else begin
       if (imemory_valid == 1) begin
         instr_release_type <= instr_access_type;
+      end else if ((timer_ready | dram_ready | iram_ready) == 1) begin
+        instr_release_type <= non_access;
       end
       if (dmemory_valid == 1) begin
         data_release_type <= data_access_type;
+      end else if ((timer_ready | dram_ready | iram_ready) == 1) begin
+        data_release_type <= non_access;
       end
     end
   end

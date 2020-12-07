@@ -33,6 +33,6 @@ _start:
   li  x30,0
   li  x31,0
 
-  lui sp,(0x3000)>>12
+  lui sp,(0x30000)>>12
 
 	jal ra,main
