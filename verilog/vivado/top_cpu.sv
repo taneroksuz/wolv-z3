@@ -65,8 +65,28 @@ module top_cpu
   logic [0  : 0] timer_ready;
   logic [0  : 0] timer_irpt;
 
-  always_ff @(posedge clk) begin
+  logic [0  : 0] iram_i;
+  logic [0  : 0] iram_d;
+  logic [0  : 0] dram_i;
+  logic [0  : 0] dram_d;
+  logic [0  : 0] uart_i;
+  logic [0  : 0] uart_d;
+  logic [0  : 0] timer_i;
+  logic [0  : 0] timer_d;
 
+  parameter [2  : 0] iram_access = 0;
+  parameter [2  : 0] dram_access = 1;
+  parameter [2  : 0] uart_access = 2;
+  parameter [2  : 0] timer_access = 3;
+  parameter [2  : 0] non_access = 4;
+
+  logic [2  : 0] instr_access_type;
+  logic [2  : 0] instr_release_type;
+
+  logic [2  : 0] data_access_type;
+  logic [2  : 0] data_release_type;
+
+  always_ff @(posedge clk) begin
     if (rst == 0) begin
       rtc <= 0;
       count <= 0;
@@ -89,120 +109,207 @@ module top_cpu
   end
 
   always_comb begin
+    case(dmemory_addr) inside
+      [timer_base_addr:timer_top_addr-1]:
+        begin
+          timer_d = dmemory_valid;
+          uart_d = 0;
+          dram_d = 0;
+          iram_d = 0;
+        end
+      [uart_base_addr:uart_top_addr-1]:
+        begin
+          timer_d = 0;
+          uart_d = dmemory_valid;
+          dram_d = 0;
+          iram_d = 0;
+        end
+      [dram_base_addr:dram_top_addr-1]:
+        begin
+          timer_d = 0;
+          uart_d = 0;
+          dram_d = dmemory_valid;
+          iram_d = 0;
+        end
+      [iram_base_addr:iram_top_addr-1]:
+        begin
+          timer_d = 0;
+          uart_d = 0;
+          dram_d = 0;
+          iram_d = dmemory_valid;
+        end
+      default:
+        begin
+          timer_d = 0;
+          uart_d = 0;
+          dram_d = 0;
+          iram_d = 0;
+        end
+    endcase
 
     case(imemory_addr) inside
-      [uart_base_addr:uart_top_addr-1]:
-        begin
-          uart_valid = imemory_valid;
-          timer_valid = 0;
-          dram_valid = 0;
-          iram_valid = 0;
-        end
       [timer_base_addr:timer_top_addr-1]:
         begin
-          uart_valid = 0;
-          timer_valid = imemory_valid;
-          dram_valid = 0;
-          iram_valid = 0;
+          timer_i = imemory_valid;
+          uart_i = 0;
+          dram_i = 0;
+          iram_i = 0;
+        end
+      [uart_base_addr:uart_top_addr-1]:
+        begin
+          timer_d = 0;
+          uart_i = imemory_valid;
+          dram_i = 0;
+          iram_i = 0;
         end
       [dram_base_addr:dram_top_addr-1]:
         begin
-          uart_valid = 0;
-          timer_valid = 0;
-          dram_valid = imemory_valid;
-          iram_valid = 0;
+          timer_i = 0;
+          uart_i = 0;
+          dram_i = imemory_valid;
+          iram_i = 0;
         end
       [iram_base_addr:iram_top_addr-1]:
         begin
-          uart_valid = 0;
-          timer_valid = 0;
-          dram_valid = 0;
-          iram_valid = imemory_valid;
+          timer_i = 0;
+          uart_i = 0;
+          dram_i = 0;
+          iram_i = imemory_valid;
         end
       default:
         begin
-          uart_valid = 0;
-          timer_valid = 0;
-          dram_valid = 0;
-          iram_valid = 0;
+          timer_i = 0;
+          uart_i = 0;
+          dram_i = 0;
+          iram_i = 0;
         end
     endcase
 
-    case(dmemory_addr) inside
-      [uart_base_addr:uart_top_addr-1]:
-        begin
-          uart_valid = dmemory_valid;
-          timer_valid = 0;
-          dram_valid = 0;
-          iram_valid = 0;
-        end
-      [timer_base_addr:timer_top_addr-1]:
-        begin
-          uart_valid = 0;
-          timer_valid = dmemory_valid;
-          dram_valid = 0;
-          iram_valid = 0;
-        end
-      [dram_base_addr:dram_top_addr-1]:
-        begin
-          uart_valid = 0;
-          timer_valid = 0;
-          dram_valid = dmemory_valid;
-          iram_valid = 0;
-        end
-      [iram_base_addr:iram_top_addr-1]:
-        begin
-          uart_valid = 0;
-          timer_valid = 0;
-          dram_valid = 0;
-          iram_valid = dmemory_valid;
-        end
-      default:
-        begin
-          uart_valid = 0;
-          timer_valid = 0;
-          dram_valid = 0;
-          iram_valid = 0;
-        end
-    endcase
+    if (timer_d==1 & timer_i==1) begin
+      timer_valid = 1;
+      uart_valid = 0;
+      dram_valid = 0;
+      iram_valid = 0;
+      instr_access_type = non_access;
+      data_access_type = timer_access;
+    end else if (uart_d==1 & uart_i==1) begin
+      timer_valid = 0;
+      uart_valid = 1;
+      dram_valid = 0;
+      iram_valid = 0;
+      instr_access_type = non_access;
+      data_access_type = uart_access;
+    end else if (dram_d==1 & dram_i==1) begin
+      timer_valid = 0;
+      uart_valid = 0;
+      dram_valid = 1;
+      iram_valid = 0;
+      instr_access_type = non_access;
+      data_access_type = dram_access;
+    end else if (iram_d==1 & iram_i==1) begin
+      timer_valid = 0;
+      uart_valid = 0;
+      dram_valid = 0;
+      iram_valid = 1;
+      instr_access_type = non_access;
+      data_access_type = iram_access;
+    end else begin
+      timer_valid = timer_d | timer_i;
+      uart_valid = uart_d | uart_i;
+      dram_valid = dram_d | dram_i;
+      iram_valid = iram_d | iram_i;
+      if (timer_i == 1) begin
+        instr_access_type = timer_access;
+      end else if (uart_i == 1) begin
+        instr_access_type = uart_access;
+      end else if (dram_i == 1) begin
+        instr_access_type = dram_access;
+      end else if (iram_i == 1) begin
+        instr_access_type = iram_access;
+      end else begin
+        instr_access_type = non_access;
+      end
+      if (timer_d == 1) begin
+        data_access_type = timer_access;
+      end else if (uart_d == 1) begin
+        data_access_type = uart_access;
+      end else if (dram_d == 1) begin
+        data_access_type = dram_access;
+      end else if (iram_d == 1) begin
+        data_access_type = iram_access;
+      end else begin
+        data_access_type = non_access;
+      end
+    end
 
-    iram_instr = dmemory_valid ? dmemory_instr : imemory_instr;
-    iram_addr = dmemory_valid ? dmemory_addr ^ iram_base_addr : imemory_addr ^ iram_base_addr;
-    iram_wdata = dmemory_valid ? dmemory_wdata : imemory_wdata;
-    iram_wstrb = dmemory_valid ? dmemory_wstrb : imemory_wstrb;
+    iram_instr = iram_d ? dmemory_instr : imemory_instr;
+    iram_addr = iram_d ? dmemory_addr ^ iram_base_addr : imemory_addr ^ iram_base_addr;
+    iram_wdata = iram_d ? dmemory_wdata : imemory_wdata;
+    iram_wstrb = iram_d ? dmemory_wstrb : imemory_wstrb;
 
-    dram_instr = dmemory_valid ? dmemory_instr : imemory_instr;
-    dram_addr = dmemory_valid ? dmemory_addr ^ dram_base_addr : imemory_addr ^ dram_base_addr;
-    dram_wdata = dmemory_valid ? dmemory_wdata : imemory_wdata;
-    dram_wstrb = dmemory_valid ? dmemory_wstrb : imemory_wstrb;
+    dram_instr = dram_d ? dmemory_instr : imemory_instr;
+    dram_addr = dram_d ? dmemory_addr ^ dram_base_addr : imemory_addr ^ dram_base_addr;
+    dram_wdata = dram_d ? dmemory_wdata : imemory_wdata;
+    dram_wstrb = dram_d ? dmemory_wstrb : imemory_wstrb;
 
-    timer_instr = dmemory_valid ? dmemory_instr : imemory_instr;
-    timer_addr = dmemory_valid ? dmemory_addr ^ timer_base_addr : imemory_addr ^ timer_base_addr;
-    timer_wdata = dmemory_valid ? dmemory_wdata : imemory_wdata;
-    timer_wstrb = dmemory_valid ? dmemory_wstrb : imemory_wstrb;
+    uart_instr = uart_d ? dmemory_instr : imemory_instr;
+    uart_addr = uart_d ? dmemory_addr ^ uart_base_addr : imemory_addr ^ uart_base_addr;
+    uart_wdata = uart_d ? dmemory_wdata : imemory_wdata;
+    uart_wstrb = uart_d ? dmemory_wstrb : imemory_wstrb;
 
-    uart_instr = dmemory_valid ? dmemory_instr : imemory_instr;
-    uart_addr = dmemory_valid ? dmemory_addr ^ timer_base_addr : imemory_addr ^ timer_base_addr;
-    uart_wdata = dmemory_valid ? dmemory_wdata : imemory_wdata;
-    uart_wstrb = dmemory_valid ? dmemory_wstrb : imemory_wstrb;
+    timer_instr = iram_d ? dmemory_instr : imemory_instr;
+    timer_addr = iram_d ? dmemory_addr ^ timer_base_addr : imemory_addr ^ timer_base_addr;
+    timer_wdata = iram_d ? dmemory_wdata : imemory_wdata;
+    timer_wstrb = iram_d ? dmemory_wstrb : imemory_wstrb;
 
-    if (iram_ready == 1) begin
+    if (instr_release_type == iram_access) begin
       imemory_rdata = iram_rdata;
       imemory_ready = iram_ready;
-    end else if (dram_ready == 1) begin
+    end else if (instr_release_type == dram_access) begin
       imemory_rdata = dram_rdata;
       imemory_ready = dram_ready;
-    end else if  (timer_ready == 1) begin
-      imemory_rdata = timer_rdata;
-      imemory_ready = timer_ready;
-    end else if  (uart_ready == 1) begin
+    end else if  (instr_release_type == uart_access) begin
       imemory_rdata = uart_rdata;
       imemory_ready = uart_ready;
+    end else if  (instr_release_type == timer_access) begin
+      imemory_rdata = timer_rdata;
+      imemory_ready = timer_ready;
     end else begin
       imemory_rdata = 0;
       imemory_ready = 0;
     end
 
+    if (data_release_type == iram_access) begin
+      dmemory_rdata = iram_rdata;
+      dmemory_ready = iram_ready;
+    end else if (data_release_type == dram_access) begin
+      dmemory_rdata = dram_rdata;
+      dmemory_ready = dram_ready;
+    end else if  (data_release_type == uart_access) begin
+      dmemory_rdata = uart_rdata;
+      dmemory_ready = uart_ready;
+    end else if  (data_release_type == timer_access) begin
+      dmemory_rdata = timer_rdata;
+      dmemory_ready = timer_ready;
+    end else begin
+      dmemory_rdata = 0;
+      dmemory_ready = 0;
+    end
+
+  end
+
+  always_ff @(posedge clk) begin
+    if (rst == 0) begin
+      instr_release_type <= non_access;
+      data_release_type <= non_access;
+    end else begin
+      if (imemory_valid == 1) begin
+        instr_release_type <= instr_access_type;
+      end
+      if (dmemory_valid == 1) begin
+        data_release_type <= data_access_type;
+      end
+    end
   end
 
   cpu cpu_comp

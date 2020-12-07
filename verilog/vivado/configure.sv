@@ -15,7 +15,8 @@ package configure;
 	parameter timer_top_addr = 32'h200010;
 
 	parameter prefetch_depth = 4;
-	parameter bram_depth = 12;
+	parameter iram_depth = 12;
+	parameter dram_depth = 12;
 
 	parameter clk_freq = 100000000; // 100MHz
 	parameter clk_pll = 50000000; // 50MHz

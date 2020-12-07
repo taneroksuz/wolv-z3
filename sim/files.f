@@ -17,7 +17,6 @@
 ../../verilog/fetch_stage.sv
 ../../verilog/decode_stage.sv
 ../../verilog/execute_stage.sv
-../../verilog/arbiter.sv
 ../../verilog/timer.sv
 ../../verilog/cpu.sv
 ../../verilog/tb/dram.sv

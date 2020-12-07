@@ -112,7 +112,7 @@ module top_cpu
         begin
           timer_d = 0;
           dram_d = 0;
-          iram_d = dmemory_valid;
+          iram_d = imemory_valid;
         end
       [dram_base_addr:dram_top_addr-1]:
         begin
@@ -226,8 +226,12 @@ module top_cpu
       instr_release_type <= non_access;
       data_release_type <= non_access;
     end else begin
-      data_release_type <= data_access_type;
-      instr_release_type <= instr_access_type;
+      if (imemory_valid == 1) begin
+        instr_release_type <= instr_access_type;
+      end
+      if (dmemory_valid == 1) begin
+        data_release_type <= data_access_type;
+      end
     end
   end
 
