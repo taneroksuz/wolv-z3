@@ -298,7 +298,7 @@ module top_cpu
 
   end
 
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk_pll) begin
     if (rst == 0) begin
       instr_release_type <= non_access;
       data_release_type <= non_access;
@@ -342,7 +342,7 @@ module top_cpu
   iram iram_comp
   (
     .rst (rst),
-    .clk (clk),
+    .clk (clk_pll),
     .iram_valid (iram_valid),
     .iram_instr (iram_instr),
     .iram_addr (iram_addr),
@@ -355,7 +355,7 @@ module top_cpu
   dram dram_comp
   (
     .rst (rst),
-    .clk (clk),
+    .clk (clk_pll),
     .dram_valid (dram_valid),
     .dram_instr (dram_instr),
     .dram_addr (dram_addr),
