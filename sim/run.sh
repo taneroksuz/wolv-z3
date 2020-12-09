@@ -24,12 +24,6 @@ fi
 
 cd ${DIR}/sim/work
 
-cp $DIR/build/dhrystone/dat/dhrystone.dat bram.dat
-split -n 2 bram.dat
-mv xaa iram.dat
-mv xab dram.dat
-sed -i 1d dram.dat
-
 start=`date +%s`
 if [ "$6" = 'wave' ]
 then
