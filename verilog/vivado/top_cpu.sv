@@ -296,15 +296,11 @@ module top_cpu
       instr_release_type <= non_access;
       data_release_type <= non_access;
     end else begin
-      if (imemory_valid == 1) begin
+      if (imemory_valid == 1 && (timer_ready | dram_ready | iram_ready) == 1) begin
         instr_release_type <= instr_access_type;
-      end else if ((timer_ready | dram_ready | iram_ready) == 1) begin
-        instr_release_type <= non_access;
       end
-      if (dmemory_valid == 1) begin
+      if (dmemory_valid == 1 && (timer_ready | dram_ready | iram_ready) == 1) begin
         data_release_type <= data_access_type;
-      end else if ((timer_ready | dram_ready | iram_ready) == 1) begin
-        data_release_type <= non_access;
       end
     end
   end

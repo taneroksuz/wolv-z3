@@ -11,7 +11,7 @@ module testbench;
   logic tx;
 
   initial begin
-    rx = 0;
+    rx = 1;
     clk = 1;
   end
 
