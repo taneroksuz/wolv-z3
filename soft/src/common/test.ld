@@ -42,6 +42,9 @@ SECTIONS
   .text : { *(.text) } > iram
 
   /* data segment */
+  .rodata : { *(.rodata) } > dram
+
+  /* data segment */
   .data : { *(.data) } > dram
 
   .sdata : {
