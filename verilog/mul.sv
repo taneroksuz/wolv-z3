@@ -37,14 +37,8 @@ module mul
     result = op1*op2;
     if (mul_op.mul == 1) begin
       mul_out.result = result[31:0];
-    end else if (mul_op.mulh == 1) begin
-      mul_out.result = result[63:32];
-    end else if (mul_op.mulh == 1) begin
-      mul_out.result = result[63:32];
-    end else if (mul_op.mulh == 1) begin
-      mul_out.result = result[63:32];
     end else begin
-      mul_out.result = 0;
+      mul_out.result = result[63:32];
     end
 
   end
