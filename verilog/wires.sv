@@ -29,25 +29,31 @@ package wires;
   };
 
   typedef struct packed{
-    logic [0 : 0] muldiv_mul;
-    logic [0 : 0] muldiv_mulh;
-    logic [0 : 0] muldiv_mulhsu;
-    logic [0 : 0] muldiv_mulhu;
-    logic [0 : 0] muldiv_div;
-    logic [0 : 0] muldiv_divu;
-    logic [0 : 0] muldiv_rem;
-    logic [0 : 0] muldiv_remu;
-  } muldiv_op_type;
+    logic [0 : 0] mul;
+    logic [0 : 0] mulh;
+    logic [0 : 0] mulhsu;
+    logic [0 : 0] mulhu;
+  } mul_op_type;
 
-  muldiv_op_type init_muldiv_op = '{
-    muldiv_mul : 0,
-    muldiv_mulh : 0,
-    muldiv_mulhsu : 0,
-    muldiv_mulhu : 0,
-    muldiv_div : 0,
-    muldiv_divu : 0,
-    muldiv_rem : 0,
-    muldiv_remu : 0
+  mul_op_type init_mul_op = '{
+    mul : 0,
+    mulh : 0,
+    mulhsu : 0,
+    mulhu : 0
+  };
+
+  typedef struct packed{
+    logic [0 : 0] div;
+    logic [0 : 0] divu;
+    logic [0 : 0] rem;
+    logic [0 : 0] remu;
+  } div_op_type;
+
+  div_op_type init_div_op = '{
+  	div : 0,
+    divu : 0,
+    rem : 0,
+    remu : 0
   };
 
   typedef struct packed{
@@ -123,14 +129,24 @@ package wires;
   typedef struct packed{
     logic [31 : 0] rdata1;
     logic [31 : 0] rdata2;
+    mul_op_type mul_op;
+  } mul_in_type;
+
+  typedef struct packed{
+    logic [31 : 0] result;
+  } mul_out_type;
+
+  typedef struct packed{
+    logic [31 : 0] rdata1;
+    logic [31 : 0] rdata2;
     logic [0  : 0] enable;
-    muldiv_op_type muldiv_op;
-  } muldiv_in_type;
+    div_op_type div_op;
+  } div_in_type;
 
   typedef struct packed{
     logic [31 : 0] result;
     logic [0  : 0] ready;
-  } muldiv_out_type;
+  } div_out_type;
 
   typedef struct packed{
     logic [31 : 0] op1;
@@ -138,32 +154,30 @@ package wires;
     logic [0  : 0] op1_signed;
     logic [0  : 0] op2_signed;
     logic [0  : 0] op1_neg;
+    logic [0  : 0] div;
     logic [5  : 0] counter;
     logic [64 : 0] result;
-    logic [0  : 0] mul_op;
-    logic [0  : 0] div_op;
     logic [0  : 0] negativ;
     logic [0  : 0] divisionbyzero;
     logic [0  : 0] overflow;
     logic [0  : 0] ready;
-    muldiv_op_type muldiv_op;
-  } muldiv_reg_type;
+    div_op_type div_op;
+  } div_reg_type;
 
-  muldiv_reg_type init_muldiv_reg = '{
+  div_reg_type init_div_reg = '{
     op1 : 0,
     op2 : 0,
     op1_signed : 0,
     op2_signed : 0,
     op1_neg : 0,
+    div : 0,
     counter : 0,
     result : 0,
-    mul_op : 0,
-    div_op : 0,
     negativ : 0,
     divisionbyzero : 0,
     overflow : 0,
     ready : 0,
-    muldiv_op : init_muldiv_op
+    div_op : init_div_op
   };
 
   typedef struct packed{
@@ -238,12 +252,14 @@ package wires;
     logic [0  : 0] load;
     logic [0  : 0] store;
     logic [0  : 0] csr;
-    logic [0  : 0] muldiv;
+    logic [0  : 0] mul;
+    logic [0  : 0] div;
     alu_op_type alu_op;
     bcu_op_type bcu_op;
     lsu_op_type lsu_op;
     csr_op_type csr_op;
-    muldiv_op_type muldiv_op;
+    mul_op_type mul_op;
+    div_op_type div_op;
     logic [0  : 0] fence;
     logic [0  : 0] ecall;
     logic [0  : 0] ebreak;
@@ -346,7 +362,8 @@ package wires;
     logic [0  : 0] load;
     logic [0  : 0] store;
     logic [0  : 0] csr;
-    logic [0  : 0] muldiv;
+    logic [0  : 0] mul;
+    logic [0  : 0] div;
     logic [0  : 0] fence;
     logic [0  : 0] ecall;
     logic [0  : 0] ebreak;
@@ -363,7 +380,8 @@ package wires;
     bcu_op_type bcu_op;
     lsu_op_type lsu_op;
     csr_op_type csr_op;
-    muldiv_op_type muldiv_op;
+    mul_op_type mul_op;
+    div_op_type div_op;
     logic [0  : 0] exception;
     logic [3  : 0] ecause;
     logic [31 : 0] etval;
@@ -392,7 +410,8 @@ package wires;
     logic [0  : 0] load;
     logic [0  : 0] store;
     logic [0  : 0] csr;
-    logic [0  : 0] muldiv;
+    logic [0  : 0] mul;
+    logic [0  : 0] div;
     logic [0  : 0] fence;
     logic [0  : 0] ecall;
     logic [0  : 0] ebreak;
@@ -409,7 +428,8 @@ package wires;
     bcu_op_type bcu_op;
     lsu_op_type lsu_op;
     csr_op_type csr_op;
-    muldiv_op_type muldiv_op;
+    mul_op_type mul_op;
+    div_op_type div_op;
     logic [0  : 0] exception;
     logic [3  : 0] ecause;
     logic [31 : 0] etval;
@@ -439,7 +459,8 @@ package wires;
     load : 0,
     store : 0,
     csr : 0,
-    muldiv : 0,
+    mul : 0,
+    div : 0,
     fence : 0,
     ecall : 0,
     ebreak : 0,
@@ -456,7 +477,8 @@ package wires;
     bcu_op : init_bcu_op,
     lsu_op : init_lsu_op,
     csr_op : init_csr_op,
-    muldiv_op : init_muldiv_op,
+    mul_op : init_mul_op,
+    div_op : init_div_op,
     exception : 0,
     ecause : 0,
     etval : 0,
@@ -490,7 +512,8 @@ package wires;
     logic [0  : 0] load;
     logic [0  : 0] store;
     logic [0  : 0] csr;
-    logic [0  : 0] muldiv;
+    logic [0  : 0] mul;
+    logic [0  : 0] div;
     logic [0  : 0] fence;
     logic [0  : 0] ecall;
     logic [0  : 0] ebreak;
@@ -500,6 +523,7 @@ package wires;
     logic [31 : 0] rdata1;
     logic [31 : 0] rdata2;
     logic [31 : 0] cdata;
+    logic [31 : 0] mdata;
     logic [31 : 0] wdata;
     logic [31 : 0] ldata;
     logic [31 : 0] address;
@@ -508,7 +532,8 @@ package wires;
     bcu_op_type bcu_op;
     lsu_op_type lsu_op;
     csr_op_type csr_op;
-    muldiv_op_type muldiv_op;
+    mul_op_type mul_op;
+    div_op_type div_op;
     logic [0  : 0] exception;
     logic [3  : 0] ecause;
     logic [31 : 0] etval;
@@ -537,7 +562,8 @@ package wires;
     load : 0,
     store : 0,
     csr : 0,
-    muldiv : 0,
+    mul : 0,
+    div : 0,
     fence : 0,
     ecall : 0,
     ebreak : 0,
@@ -547,6 +573,7 @@ package wires;
     rdata1 : 0,
     rdata2 : 0,
     cdata : 0,
+    mdata : 0,
     wdata : 0,
     ldata : 0,
     address : 0,
@@ -555,7 +582,8 @@ package wires;
     bcu_op : init_bcu_op,
     lsu_op : init_lsu_op,
     csr_op : init_csr_op,
-    muldiv_op : init_muldiv_op,
+    mul_op : init_mul_op,
+    div_op : init_div_op,
     exception : 0,
     ecause : 0,
     etval : 0,

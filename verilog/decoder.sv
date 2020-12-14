@@ -41,7 +41,8 @@ module decoder
   logic [0  : 0] load;
   logic [0  : 0] store;
   logic [0  : 0] csr;
-  logic [0  : 0] muldiv;
+  logic [0  : 0] mul;
+  logic [0  : 0] div;
   logic [0  : 0] fence;
   logic [0  : 0] ecall;
   logic [0  : 0] ebreak;
@@ -54,7 +55,8 @@ module decoder
   lsu_op_type lsu_op;
   csr_op_type csr_op;
 
-  muldiv_op_type muldiv_op;
+  mul_op_type mul_op;
+  div_op_type div_op;
 
   logic [0  : 0] nonzero_waddr;
   logic [0  : 0] nonzero_raddr1;
@@ -101,7 +103,8 @@ module decoder
     load = 0;
     store = 0;
     csr = 0;
-    muldiv = 0;
+    mul = 0;
+    div = 0;
     fence = 0;
     ecall = 0;
     ebreak = 0;
@@ -114,7 +117,8 @@ module decoder
     lsu_op = init_lsu_op;
     csr_op = init_csr_op;
 
-    muldiv_op = init_muldiv_op;
+    mul_op = init_mul_op;
+    div_op = init_div_op;
 
     nonzero_waddr = |waddr;
     nonzero_raddr1 = |raddr1;
@@ -235,16 +239,17 @@ module decoder
             default : valid = 0;
           endcase;
         end else if (instr[25] == 1) begin
-          muldiv = 1;
+          mul = !funct3[2];
+          div = funct3[2];
           case (funct3)
-            funct_mul : muldiv_op.muldiv_mul = 1;
-            funct_mulh : muldiv_op.muldiv_mulh = 1;
-            funct_mulhsu : muldiv_op.muldiv_mulhsu = 1;
-            funct_mulhu : muldiv_op.muldiv_mulhu = 1;
-            funct_div : muldiv_op.muldiv_div = 1;
-            funct_divu : muldiv_op.muldiv_divu = 1;
-            funct_rem : muldiv_op.muldiv_rem = 1;
-            funct_remu : muldiv_op.muldiv_remu = 1;
+            funct_mul : mul_op.mul = 1;
+            funct_mulh : mul_op.mulh = 1;
+            funct_mulhsu : mul_op.mulhsu = 1;
+            funct_mulhu : mul_op.mulhu = 1;
+            funct_div : div_op.div = 1;
+            funct_divu : div_op.divu = 1;
+            funct_rem : div_op.rem = 1;
+            funct_remu : div_op.remu = 1;
             default : valid = 0;
           endcase;
         end
@@ -326,12 +331,14 @@ module decoder
     decoder_out.load = load;
     decoder_out.store = store;
     decoder_out.csr = csr;
-    decoder_out.muldiv = muldiv;
+    decoder_out.mul = mul;
+    decoder_out.div = div;
     decoder_out.alu_op = alu_op;
     decoder_out.bcu_op = bcu_op;
     decoder_out.lsu_op = lsu_op;
     decoder_out.csr_op = csr_op;
-    decoder_out.muldiv_op = muldiv_op;
+    decoder_out.mul_op = mul_op;
+    decoder_out.div_op = div_op;
     decoder_out.fence = fence;
     decoder_out.ecall = ecall;
     decoder_out.ebreak = ebreak;
