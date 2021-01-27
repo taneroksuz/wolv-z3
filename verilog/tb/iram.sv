@@ -17,6 +17,8 @@ module iram
 
   logic [31 : 0] iram_block[0:2**iram_depth-1];
 
+  logic [31 : 0] host[0:0];
+
   logic [31 : 0] rdata;
   logic [0  : 0] ready;
 
@@ -25,10 +27,11 @@ module iram
     input logic [31 : 0] iram_addr;
     input logic [31 : 0] iram_wdata;
     input logic [3  : 0] iram_wstrb;
+    input logic [31 : 0] host;
     logic [0 : 0] ok;
     begin
       ok = 0;
-      if (|iram_block[1024] == 0 & iram_addr[(iram_depth+1):2] == 1024  & |iram_wstrb == 1) begin
+      if (|iram_block[host[iram_depth+1:2]] == 0 & iram_addr[(iram_depth+1):2] == host[iram_depth+1:2]  & |iram_wstrb == 1) begin
         ok = 1;
       end
       if (ok == 1) begin
@@ -45,13 +48,14 @@ module iram
 
   initial begin
     $readmemh("iram.dat", iram_block);
+    $readmemh("host.dat", host);
   end
 
   always_ff @(posedge clk) begin
 
     if (iram_valid == 1) begin
 
-      check(iram_block,iram_addr,iram_wdata,iram_wstrb);
+      check(iram_block,iram_addr,iram_wdata,iram_wstrb,host[0]);
 
       if (iram_addr == uart_base_addr) begin
         if (iram_wstrb[0] == 1) begin

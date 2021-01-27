@@ -32,6 +32,7 @@ then
   if [ "$4" = 'dhrystone' ]
   then
     cp $DIR/build/dhrystone/dat/dhrystone.dat bram.dat
+    cp $DIR/build/dhrystone/elf/dhrystone.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -40,6 +41,7 @@ then
   elif [ "$4" = 'coremark' ]
   then
     cp $DIR/build/coremark/dat/coremark.dat bram.dat
+    cp $DIR/build/coremark/elf/coremark.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -48,6 +50,7 @@ then
   elif [ "$4" = 'csmith' ]
   then
     cp $DIR/build/csmith/dat/csmith.dat bram.dat
+    cp $DIR/build/csmith/elf/csmith.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -56,6 +59,7 @@ then
   elif [ "$4" = 'torture' ]
   then
     cp $DIR/build/torture/dat/torture.dat bram.dat
+    cp $DIR/build/torture/elf/torture.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -64,6 +68,7 @@ then
   elif [ "$4" = 'uart' ]
   then
     cp $DIR/build/uart/dat/uart.dat bram.dat
+    cp $DIR/build/uart/elf/uart.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -79,6 +84,7 @@ then
       sed -i 1d dram.dat
       filename=${filename##*/}
       filename=${filename%.dat}
+      cp $DIR/build/compliance/elf/${filename}.host host.dat
       echo "${filename}"
     	obj_dir/Vtop_cpu $CYCLES ${filename} 2> /dev/null
     done
@@ -88,8 +94,9 @@ then
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-    filename=${3##*/}
+    filename=${4##*/}
     filename=${filename%.dat}
+    cp $DIR/${subpath}/elf/${filename}.host host.dat
     obj_dir/Vtop_cpu $CYCLES ${filename} 2> /dev/null
   fi
 else
@@ -98,6 +105,7 @@ else
   if [ "$4" = 'dhrystone' ]
   then
     cp $DIR/build/dhrystone/dat/dhrystone.dat bram.dat
+    cp $DIR/build/dhrystone/elf/dhrystone.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -106,6 +114,7 @@ else
   elif [ "$4" = 'coremark' ]
   then
     cp $DIR/build/coremark/dat/coremark.dat bram.dat
+    cp $DIR/build/coremark/elf/coremark.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -114,6 +123,7 @@ else
   elif [ "$4" = 'csmith' ]
   then
     cp $DIR/build/csmith/dat/csmith.dat bram.dat
+    cp $DIR/build/csmith/elf/csmith.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -122,6 +132,7 @@ else
   elif [ "$4" = 'torture' ]
   then
     cp $DIR/build/torture/dat/torture.dat bram.dat
+    cp $DIR/build/torture/elf/torture.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -130,6 +141,7 @@ else
   elif [ "$4" = 'uart' ]
   then
     cp $DIR/build/uart/dat/uart.dat bram.dat
+    cp $DIR/build/uart/elf/uart.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
@@ -145,6 +157,7 @@ else
       sed -i 1d dram.dat
       filename=${filename##*/}
       filename=${filename%.dat}
+      cp $DIR/build/compliance/elf/${filename}.host host.dat
       echo "${filename}"
     	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
     done
@@ -154,6 +167,11 @@ else
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
+    dirname="$4"
+    subpath=${dirname%/dat*}
+    filename=${4##*/}
+    filename=${filename%.dat}
+    cp $DIR/${subpath}/elf/${filename}.host host.dat
     obj_dir/Vtop_cpu $CYCLES 2> /dev/null
   fi
 fi
