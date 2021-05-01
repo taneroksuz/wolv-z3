@@ -69,14 +69,15 @@ void handle_timer_interrupt()
   {
     min = 0;
   }
-  __asm__("mret");
 }
 
 void init_timer_interrupt()
 {
   increase_timer_interrupt(TIMER_COUNT);
 
-  uintptr_t address = (uintptr_t) handle_timer_interrupt;
+  uintptr_t address;
+
+  __asm__("la %0,_mtvec" : "=r"(address));
 
   write_csr(mtvec,address);
 
