@@ -52,9 +52,9 @@ module execute_stage
     v.load = d.d.load;
     v.store = d.d.store;
     v.nop = d.d.nop;
-    v.csr = d.d.csr;
-    v.mul = d.d.mul;
-    v.div = d.d.div;
+    v.csregister = d.d.csregister;
+    v.multiplication = d.d.multiplication;
+    v.division = d.d.division;
     v.fence = d.d.fence;
     v.ecall = d.d.ecall;
     v.ebreak = d.d.ebreak;
@@ -108,7 +108,7 @@ module execute_stage
       v.wdata = v.npc;
     end else if (v.crden == 1) begin
       v.wdata = v.cdata;
-    end else if (v.mul == 1) begin
+    end else if (v.multiplication == 1) begin
       v.wdata = v.mdata;
     end
 
@@ -122,7 +122,7 @@ module execute_stage
 
     div_in.rdata1 = v.rdata1;
     div_in.rdata2 = v.rdata2;
-    div_in.enable = v.div & ~(d.e.clear | d.e.stall);
+    div_in.enable = v.division & ~(d.e.clear | d.e.stall);
     div_in.div_op = v.div_op;
 
     lsu_in.ldata = dmem_out.mem_rdata;
@@ -131,7 +131,7 @@ module execute_stage
 
     v.ldata = lsu_out.res;
 
-    if (v.div == 1) begin
+    if (v.division == 1) begin
       if (div_out.ready == 0) begin
         v.stall = 1;
       end else if (div_out.ready == 1) begin
@@ -158,7 +158,7 @@ module execute_stage
       v.jalr = 0;
       v.branch = 0;
       v.nop = 0;
-      v.csr = 0;
+      v.csregister = 0;
       v.fence = 0;
       v.ecall = 0;
       v.ebreak = 0;

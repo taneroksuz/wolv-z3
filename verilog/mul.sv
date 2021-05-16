@@ -25,9 +25,9 @@ module mul
     op1 = {1'b0,mul_in.rdata1};
     op2 = {1'b0,mul_in.rdata2};
     mul_op = mul_in.mul_op;
-    op1_signed = mul_op.mul | mul_op.mulh |
+    op1_signed = mul_op.muls | mul_op.mulh |
                    mul_op.mulhsu;
-    op2_signed = mul_op.mul | mul_op.mulh;
+    op2_signed = mul_op.muls | mul_op.mulh;
     if (op1_signed == 1) begin
       op1[32] = op1[31];
     end
@@ -35,7 +35,7 @@ module mul
       op2[32] = op2[31];
     end
     result = op1*op2;
-    if (mul_op.mul == 1) begin
+    if (mul_op.muls == 1) begin
       mul_out.result = result[31:0];
     end else begin
       mul_out.result = result[63:32];

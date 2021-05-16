@@ -41,9 +41,9 @@ module decoder
   logic [0  : 0] load;
   logic [0  : 0] store;
   logic [0  : 0] nop;
-  logic [0  : 0] csr;
-  logic [0  : 0] mul;
-  logic [0  : 0] div;
+  logic [0  : 0] csregister;
+  logic [0  : 0] multiplication;
+  logic [0  : 0] division;
   logic [0  : 0] fence;
   logic [0  : 0] ecall;
   logic [0  : 0] ebreak;
@@ -104,9 +104,9 @@ module decoder
     load = 0;
     store = 0;
     nop = 0;
-    csr = 0;
-    mul = 0;
-    div = 0;
+    csregister = 0;
+    multiplication = 0;
+    division = 0;
     fence = 0;
     ecall = 0;
     ebreak = 0;
@@ -241,14 +241,14 @@ module decoder
             default : valid = 0;
           endcase;
         end else if (instr[25] == 1) begin
-          mul = !funct3[2];
-          div = funct3[2];
+          multiplication = !funct3[2];
+          division = funct3[2];
           case (funct3)
-            funct_mul : mul_op.mul = 1;
+            funct_mul : mul_op.muls = 1;
             funct_mulh : mul_op.mulh = 1;
             funct_mulhsu : mul_op.mulhsu = 1;
             funct_mulhu : mul_op.mulhu = 1;
-            funct_div : div_op.div = 1;
+            funct_div : div_op.divs = 1;
             funct_divu : div_op.divu = 1;
             funct_rem : div_op.rem = 1;
             funct_remu : div_op.remu = 1;
@@ -277,39 +277,39 @@ module decoder
           cwren = 1;
           crden = nonzero_waddr;
           csr_op.csrrw = 1;
-          csr = 1;
+          csregister = 1;
         end else if (funct3 == 2) begin
           wren = nonzero_waddr;
           rden1 = 1;
           cwren = nonzero_waddr;
           crden = 1;
           csr_op.csrrs = 1;
-          csr = 1;
+          csregister = 1;
         end else if (funct3 == 3) begin
           wren = nonzero_waddr;
           rden1 = 1;
           cwren = nonzero_waddr;
           crden = 1;
           csr_op.csrrc = 1;
-          csr = 1;
+          csregister = 1;
         end else if (funct3 == 5) begin
           wren = nonzero_waddr;
           cwren = 1;
           crden = nonzero_waddr;
           csr_op.csrrwi = 1;
-          csr = 1;
+          csregister = 1;
         end else if (funct3 == 6) begin
           wren = nonzero_waddr;
           cwren = nonzero_imm_c;
           crden = 1;
           csr_op.csrrsi = 1;
-          csr = 1;
+          csregister = 1;
         end else if (funct3 == 7) begin
           wren = nonzero_waddr;
           cwren = nonzero_imm_c;
           crden = 1;
           csr_op.csrrci = 1;
-          csr = 1;
+          csregister = 1;
         end
       end
       default : valid = 0;
@@ -334,9 +334,9 @@ module decoder
     decoder_out.load = load;
     decoder_out.store = store;
     decoder_out.nop = nop;
-    decoder_out.csr = csr;
-    decoder_out.mul = mul;
-    decoder_out.div = div;
+    decoder_out.csregister = csregister;
+    decoder_out.multiplication = multiplication;
+    decoder_out.division = division;
     decoder_out.alu_op = alu_op;
     decoder_out.bcu_op = bcu_op;
     decoder_out.lsu_op = lsu_op;
