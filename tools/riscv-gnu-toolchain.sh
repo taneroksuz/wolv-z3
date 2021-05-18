@@ -1,4 +1,4 @@
-#!/bin/bash
+riscv-isa-sim#!/bin/bash
 
 RISCV_PATH=/opt/riscv
 FLAG1="rv32i-ilp32--;rv32im-ilp32--;rv32imc-ilp32--;"
@@ -20,7 +20,7 @@ sudo apt-get -y install \
   make cmake ninja-build automake bison flex gperf \
   grep sed gawk python bc \
   zlib1g-dev libexpat1-dev libmpc-dev \
-  libglib2.0-dev libfdt-dev libpixman-1-dev 
+  libglib2.0-dev libfdt-dev libpixman-1-dev
 
 # RISCV GNU TOOLCHAIN
 
@@ -64,7 +64,7 @@ cmake --build . --target install
 
 git clone --recursive https://github.com/riscv/riscv-isa-sim.git
 
-cd riscv-spike
+cd riscv-isa-sim
 
 mkdir build
 cd build
