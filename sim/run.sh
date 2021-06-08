@@ -74,6 +74,15 @@ then
     mv xab dram.dat
     sed -i 1d dram.dat
   	obj_dir/Vtop_cpu $CYCLES uart 2> /dev/null
+  elif [ "$4" = 'timer' ]
+  then
+    cp $DIR/build/timer/dat/timer.dat bram.dat
+    cp $DIR/build/timer/elf/timer.host host.dat
+    split -n 2 bram.dat
+    mv xaa iram.dat
+    mv xab dram.dat
+    sed -i 1d dram.dat
+  	obj_dir/Vtop_cpu $CYCLES timer 2> /dev/null
   elif [ "$4" = 'compliance' ]
   then
     for filename in $DIR/build/compliance/dat/*.dat; do
@@ -142,6 +151,15 @@ else
   then
     cp $DIR/build/uart/dat/uart.dat bram.dat
     cp $DIR/build/uart/elf/uart.host host.dat
+    split -n 2 bram.dat
+    mv xaa iram.dat
+    mv xab dram.dat
+    sed -i 1d dram.dat
+  	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+  elif [ "$4" = 'timer' ]
+  then
+    cp $DIR/build/timer/dat/timer.dat bram.dat
+    cp $DIR/build/timer/elf/timer.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
