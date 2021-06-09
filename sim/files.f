@@ -22,4 +22,4 @@
 ../../verilog/cpu.sv
 ../../verilog/tb/dram.sv
 ../../verilog/tb/iram.sv
-../../verilog/tb/top_cpu.sv
+../../verilog/tb/soc.sv

@@ -27,8 +27,8 @@ cd ${DIR}/sim/work
 start=`date +%s`
 if [ "$6" = 'wave' ]
 then
-	${VERILATOR} --sc -Wno-UNOPTFLAT --trace -trace-max-array 128 --trace-structs -f ${DIR}/sim/files.f --top-module top_cpu --exe ${DIR}/verilog/tb/top_cpu.cpp
-	make -s -j -C obj_dir/ -f Vtop_cpu.mk Vtop_cpu
+	${VERILATOR} --sc -Wno-UNOPTFLAT --trace -trace-max-array 128 --trace-structs -f ${DIR}/sim/files.f --top-module soc --exe ${DIR}/verilog/tb/soc.cpp
+	make -s -j -C obj_dir/ -f Vsoc.mk Vsoc
   if [ "$4" = 'dhrystone' ]
   then
     cp $DIR/build/dhrystone/dat/dhrystone.dat bram.dat
@@ -37,7 +37,7 @@ then
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES dhrystone 2> /dev/null
+  	obj_dir/Vsoc $CYCLES dhrystone 2> /dev/null
   elif [ "$4" = 'coremark' ]
   then
     cp $DIR/build/coremark/dat/coremark.dat bram.dat
@@ -46,7 +46,7 @@ then
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES coremark 2> /dev/null
+  	obj_dir/Vsoc $CYCLES coremark 2> /dev/null
   elif [ "$4" = 'csmith' ]
   then
     cp $DIR/build/csmith/dat/csmith.dat bram.dat
@@ -55,7 +55,7 @@ then
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES csmith 2> /dev/null
+  	obj_dir/Vsoc $CYCLES csmith 2> /dev/null
   elif [ "$4" = 'torture' ]
   then
     cp $DIR/build/torture/dat/torture.dat bram.dat
@@ -64,7 +64,7 @@ then
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES torture 2> /dev/null
+  	obj_dir/Vsoc $CYCLES torture 2> /dev/null
   elif [ "$4" = 'uart' ]
   then
     cp $DIR/build/uart/dat/uart.dat bram.dat
@@ -73,7 +73,7 @@ then
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES uart 2> /dev/null
+  	obj_dir/Vsoc $CYCLES uart 2> /dev/null
   elif [ "$4" = 'timer' ]
   then
     cp $DIR/build/timer/dat/timer.dat bram.dat
@@ -82,7 +82,7 @@ then
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES timer 2> /dev/null
+  	obj_dir/Vsoc $CYCLES timer 2> /dev/null
   elif [ "$4" = 'compliance' ]
   then
     for filename in $DIR/build/compliance/dat/*.dat; do
@@ -95,7 +95,7 @@ then
       filename=${filename%.dat}
       cp $DIR/build/compliance/elf/${filename}.host host.dat
       echo "${filename}"
-    	obj_dir/Vtop_cpu $CYCLES ${filename} 2> /dev/null
+    	obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
     done
   else
     cp $DIR/$4 bram.dat
@@ -106,11 +106,11 @@ then
     filename=${4##*/}
     filename=${filename%.dat}
     cp $DIR/${subpath}/elf/${filename}.host host.dat
-    obj_dir/Vtop_cpu $CYCLES ${filename} 2> /dev/null
+    obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
   fi
 else
-	${VERILATOR} --sc -Wno-UNOPTFLAT -f ${DIR}/sim/files.f --top-module top_cpu --exe ${DIR}/verilog/tb/top_cpu.cpp
-	make -s -j -C obj_dir/ -f Vtop_cpu.mk Vtop_cpu
+	${VERILATOR} --sc -Wno-UNOPTFLAT -f ${DIR}/sim/files.f --top-module soc --exe ${DIR}/verilog/tb/soc.cpp
+	make -s -j -C obj_dir/ -f Vsoc.mk Vsoc
   if [ "$4" = 'dhrystone' ]
   then
     cp $DIR/build/dhrystone/dat/dhrystone.dat bram.dat
@@ -119,7 +119,7 @@ else
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+  	obj_dir/Vsoc $CYCLES 2> /dev/null
   elif [ "$4" = 'coremark' ]
   then
     cp $DIR/build/coremark/dat/coremark.dat bram.dat
@@ -128,7 +128,7 @@ else
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+  	obj_dir/Vsoc $CYCLES 2> /dev/null
   elif [ "$4" = 'csmith' ]
   then
     cp $DIR/build/csmith/dat/csmith.dat bram.dat
@@ -137,7 +137,7 @@ else
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+  	obj_dir/Vsoc $CYCLES 2> /dev/null
   elif [ "$4" = 'torture' ]
   then
     cp $DIR/build/torture/dat/torture.dat bram.dat
@@ -146,7 +146,7 @@ else
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+  	obj_dir/Vsoc $CYCLES 2> /dev/null
   elif [ "$4" = 'uart' ]
   then
     cp $DIR/build/uart/dat/uart.dat bram.dat
@@ -155,7 +155,7 @@ else
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+  	obj_dir/Vsoc $CYCLES 2> /dev/null
   elif [ "$4" = 'timer' ]
   then
     cp $DIR/build/timer/dat/timer.dat bram.dat
@@ -164,7 +164,7 @@ else
     mv xaa iram.dat
     mv xab dram.dat
     sed -i 1d dram.dat
-  	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+  	obj_dir/Vsoc $CYCLES 2> /dev/null
   elif [ "$4" = 'compliance' ]
   then
     for filename in $DIR/build/compliance/dat/*.dat; do
@@ -177,7 +177,7 @@ else
       filename=${filename%.dat}
       cp $DIR/build/compliance/elf/${filename}.host host.dat
       echo "${filename}"
-    	obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+    	obj_dir/Vsoc $CYCLES 2> /dev/null
     done
   else
     cp $DIR/$4 bram.dat
@@ -190,7 +190,7 @@ else
     filename=${4##*/}
     filename=${filename%.dat}
     cp $DIR/${subpath}/elf/${filename}.host host.dat
-    obj_dir/Vtop_cpu $CYCLES 2> /dev/null
+    obj_dir/Vsoc $CYCLES 2> /dev/null
   fi
 fi
 end=`date +%s`
