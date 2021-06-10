@@ -47,6 +47,15 @@ then
     mv xab dram.dat
     sed -i 1d dram.dat
   	obj_dir/Vsoc $CYCLES coremark 2> /dev/null
+  elif [ "$4" = 'aapg' ]
+  then
+    cp $DIR/build/aapg/dat/aapg.dat bram.dat
+    cp $DIR/build/aapg/elf/aapg.host host.dat
+    split -n 2 bram.dat
+    mv xaa iram.dat
+    mv xab dram.dat
+    sed -i 1d dram.dat
+  	obj_dir/Vsoc $CYCLES coremark 2> /dev/null
   elif [ "$4" = 'csmith' ]
   then
     cp $DIR/build/csmith/dat/csmith.dat bram.dat
@@ -124,6 +133,15 @@ else
   then
     cp $DIR/build/coremark/dat/coremark.dat bram.dat
     cp $DIR/build/coremark/elf/coremark.host host.dat
+    split -n 2 bram.dat
+    mv xaa iram.dat
+    mv xab dram.dat
+    sed -i 1d dram.dat
+  	obj_dir/Vsoc $CYCLES 2> /dev/null
+  elif [ "$4" = 'aapg' ]
+  then
+    cp $DIR/build/aapg/dat/aapg.dat bram.dat
+    cp $DIR/build/aapg/elf/aapg.host host.dat
     split -n 2 bram.dat
     mv xaa iram.dat
     mv xab dram.dat
