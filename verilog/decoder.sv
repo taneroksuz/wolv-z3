@@ -19,8 +19,12 @@ module decoder
   logic [31 : 0] imm_j;
   logic [31 : 0] imm;
 
+  logic [4  : 0] shamt;
+
   logic [6  : 0] opcode;
   logic [2  : 0] funct3;
+  logic [4  : 0] funct5;
+  logic [6  : 0] funct7;
 
   logic [4  : 0] waddr;
   logic [4  : 0] raddr1;
@@ -42,8 +46,9 @@ module decoder
   logic [0  : 0] store;
   logic [0  : 0] nop;
   logic [0  : 0] csregister;
-  logic [0  : 0] multiplication;
   logic [0  : 0] division;
+  logic [0  : 0] multiplication;
+  logic [0  : 0] bitmanipulation;
   logic [0  : 0] fence;
   logic [0  : 0] ecall;
   logic [0  : 0] ebreak;
@@ -56,8 +61,9 @@ module decoder
   lsu_op_type lsu_op;
   csr_op_type csr_op;
 
-  mul_op_type mul_op;
   div_op_type div_op;
+  mul_op_type mul_op;
+  bit_op_type bit_op;
 
   logic [0  : 0] nonzero_waddr;
   logic [0  : 0] nonzero_raddr1;
@@ -82,8 +88,12 @@ module decoder
 
     imm = 0;
 
+    shamt = instr[24:20];
+
     opcode = instr[6:0];
     funct3 = instr[14:12];
+    funct5 = instr[24:20];
+    funct7 = instr[31:25];
 
     waddr = instr[11:7];
     raddr1 = instr[19:15];
@@ -105,8 +115,9 @@ module decoder
     store = 0;
     nop = 0;
     csregister = 0;
-    multiplication = 0;
     division = 0;
+    multiplication = 0;
+    bitmanipulation = 0;
     fence = 0;
     ecall = 0;
     ebreak = 0;
@@ -119,8 +130,9 @@ module decoder
     lsu_op = init_lsu_op;
     csr_op = init_csr_op;
 
-    mul_op = init_mul_op;
     div_op = init_div_op;
+    mul_op = init_mul_op;
+    bit_op = init_bit_op;
 
     nonzero_waddr = |waddr;
     nonzero_raddr1 = |raddr1;
@@ -201,20 +213,67 @@ module decoder
         imm = imm_i;
         case (funct3)
           funct_add : alu_op.alu_add = 1;
-          funct_sll : begin
-            alu_op.alu_sll = 1;
-            valid = ~instr[25];
-          end
-          funct_srl : begin
-            alu_op.alu_srl = ~instr[30];
-            alu_op.alu_sra = instr[30];
-            valid = ~instr[25];
-          end
           funct_slt : alu_op.alu_slt = 1;
           funct_sltu : alu_op.alu_sltu = 1;
           funct_and : alu_op.alu_and = 1;
           funct_or : alu_op.alu_or = 1;
           funct_xor : alu_op.alu_xor = 1;
+          funct_sll : begin
+            if (funct7 == 7'b0000000) begin
+              alu_op.alu_sll = 1;
+            end else if (funct7 == 7'b0100100) begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_bclr = 1;
+            end else if (funct7 == 7'b0010100) begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_bset = 1;
+            end else if (funct7 == 7'b0110100) begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_binv = 1;
+            end else if (funct7 == 7'b0110000) begin
+              if (funct5 == 5'b00000) begin
+                bitmanipulation = 1;
+                bit_op.bit_zbb.bit_clz = 1;
+              end else if (funct5 == 5'b00001) begin
+                bitmanipulation = 1;
+                bit_op.bit_zbb.bit_ctz = 1;
+              end else if (funct5 == 5'b00010) begin
+                bitmanipulation = 1;
+                bit_op.bit_zbb.bit_cpop = 1;
+              end else if (funct5 == 5'b00100) begin
+                bitmanipulation = 1;
+                bit_op.bit_zbb.bit_sextb = 1;
+              end else if (funct5 == 5'b00101) begin
+                bitmanipulation = 1;
+                bit_op.bit_zbb.bit_sexth = 1;
+              end else begin
+                valid = 0;
+              end
+            end else begin
+              valid = 0;
+            end
+          end
+          funct_srl : begin
+            if (funct7 == 7'b0000000) begin
+              alu_op.alu_srl = 1;
+            end else if (funct7 == 7'b0100000) begin
+              alu_op.alu_sra = 1;
+            end else if (funct7 == 7'b0100100) begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_bext = 1;
+            end else if (funct7 == 7'b0110000) begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_ror = 1;
+            end else if (funct7 == 7'b0010100 && funct5 == 5'b00111) begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_orcb = 1;
+            end else if (funct7 == 7'b0110100 && funct5 == 5'b11000) begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_rev8 = 1;
+            end else begin
+              valid = 0;
+            end
+          end
           default : valid = 0;
         endcase;
       end
@@ -222,17 +281,11 @@ module decoder
         wren = nonzero_waddr;
         rden1 = 1;
         rden2 = 1;
-        if (instr[25] == 0) begin
+        if (funct7 == 7'b0000000) begin
           case (funct3)
-            funct_add : begin
-              alu_op.alu_add = ~instr[30];
-              alu_op.alu_sub = instr[30];
-            end
+            funct_add : alu_op.alu_add = 1;
             funct_sll : alu_op.alu_sll = 1;
-            funct_srl : begin
-              alu_op.alu_srl = ~instr[30];
-              alu_op.alu_sra = instr[30];
-            end
+            funct_srl : alu_op.alu_srl = 1;
             funct_slt : alu_op.alu_slt = 1;
             funct_sltu : alu_op.alu_sltu = 1;
             funct_and : alu_op.alu_and = 1;
@@ -240,19 +293,157 @@ module decoder
             funct_xor : alu_op.alu_xor = 1;
             default : valid = 0;
           endcase;
-        end else if (instr[25] == 1) begin
-          multiplication = !funct3[2];
-          division = funct3[2];
+        end else if (funct7 == 7'b0100000) begin
           case (funct3)
-            funct_mul : mul_op.muls = 1;
-            funct_mulh : mul_op.mulh = 1;
-            funct_mulhsu : mul_op.mulhsu = 1;
-            funct_mulhu : mul_op.mulhu = 1;
-            funct_div : div_op.divs = 1;
-            funct_divu : div_op.divu = 1;
-            funct_rem : div_op.rem = 1;
-            funct_remu : div_op.remu = 1;
+            funct_add : alu_op.alu_sub = 1;
+            funct_srl : alu_op.alu_sra = 1;
+            funct_and : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_andn = 1;
+            end
+            funct_or : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_orn = 1;
+            end
+            funct_xor : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_xnor = 1;
+            end
             default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0010000) begin
+          case (funct3)
+            funct_sh1add : begin
+              bitmanipulation = 1;
+              bit_op.bit_zba.bit_sh1add = 1;
+            end
+            funct_sh2add : begin
+              bitmanipulation = 1;
+              bit_op.bit_zba.bit_sh2add = 1;
+            end
+            funct_sh3add : begin
+              bitmanipulation = 1;
+              bit_op.bit_zba.bit_sh3add = 1;
+            end
+            default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0000101) begin
+          case (funct3)
+            funct_clmul : begin
+              bitmanipulation = 1;
+              bit_op.bmcycle = 1;
+              bit_op.bit_zbc.bit_clmul = 1;
+            end
+            funct_clmulr : begin
+              bitmanipulation = 1;
+              bit_op.bmcycle = 1;
+              bit_op.bit_zbc.bit_clmulr = 1;
+            end
+            funct_clmulh : begin
+              bitmanipulation = 1;
+              bit_op.bmcycle = 1;
+              bit_op.bit_zbc.bit_clmulh = 1;
+            end
+            funct_min : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_min = 1;
+            end
+            funct_minu : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_minu = 1;
+            end
+            funct_max : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_max = 1;
+            end
+            funct_maxu : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_maxu = 1;
+            end
+            default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0100100) begin
+          case (funct3)
+            funct_bclr : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_bclr = 1;
+            end
+            funct_bext : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_bext = 1;
+            end
+            default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0010100) begin
+          case (funct3)
+            funct_bset : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_bset = 1;
+            end
+            default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0110100) begin
+          case (funct3)
+            funct_binv : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbs.bit_binv = 1;
+            end
+            default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0110000) begin
+          case (funct3)
+            funct_rol : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_rol = 1;
+            end
+            funct_ror : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_ror = 1;
+            end
+            default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0000100 && funct5 == 5'b00000) begin
+          case (funct3)
+            funct_zexth : begin
+              bitmanipulation = 1;
+              bit_op.bit_zbb.bit_zexth = 1;
+            end
+            default : valid = 0;
+          endcase;
+        end else if (funct7 == 7'b0000001) begin
+          case (funct3)
+            funct_mul : begin
+              multiplication = 1;
+              mul_op.muls = 1;
+            end
+            funct_mulh :  begin
+              multiplication = 1;
+              mul_op.mulh = 1;
+            end
+            funct_mulhsu :  begin
+              multiplication = 1;
+              mul_op.mulhsu = 1;
+            end
+            funct_mulhu :  begin
+              multiplication = 1;
+              mul_op.mulhu = 1;
+            end
+            funct_div :  begin
+              division = 1;
+              div_op.divs = 1;
+            end
+            funct_divu :  begin
+              division = 1;
+              div_op.divu = 1;
+            end
+            funct_rem :  begin
+              division = 1;
+              div_op.rem = 1;
+            end
+            funct_remu :  begin
+              division = 1;
+              div_op.remu = 1;
+            end
           endcase;
         end
       end
@@ -320,6 +511,10 @@ module decoder
       nop = 1;
     end
 
+    if (bitmanipulation == 1) begin
+      imm = {27'h0,shamt};
+    end
+
     decoder_out.imm = imm;
     decoder_out.wren = wren;
     decoder_out.rden1 = rden1;
@@ -335,14 +530,16 @@ module decoder
     decoder_out.store = store;
     decoder_out.nop = nop;
     decoder_out.csregister = csregister;
-    decoder_out.multiplication = multiplication;
     decoder_out.division = division;
+    decoder_out.multiplication = multiplication;
+    decoder_out.bitmanipulation = bitmanipulation;
     decoder_out.alu_op = alu_op;
     decoder_out.bcu_op = bcu_op;
     decoder_out.lsu_op = lsu_op;
     decoder_out.csr_op = csr_op;
-    decoder_out.mul_op = mul_op;
     decoder_out.div_op = div_op;
+    decoder_out.mul_op = mul_op;
+    decoder_out.bit_op = bit_op;
     decoder_out.fence = fence;
     decoder_out.ecall = ecall;
     decoder_out.ebreak = ebreak;
