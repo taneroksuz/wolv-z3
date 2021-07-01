@@ -2,6 +2,8 @@
 ../../verilog/constants.sv
 ../../verilog/functions.sv
 ../../verilog/wires.sv
+../../verilog/bit_alu.sv
+../../verilog/bit_clmul.sv
 ../../verilog/alu.sv
 ../../verilog/agu.sv
 ../../verilog/bcu.sv

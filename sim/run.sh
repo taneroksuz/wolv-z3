@@ -106,6 +106,20 @@ then
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
     done
+  elif [ "$4" = 'ovp' ]
+  then
+    for filename in $DIR/build/ovp/dat/*.dat; do
+      cp $filename bram.dat
+      split -n 2 bram.dat
+      mv xaa iram.dat
+      mv xab dram.dat
+      sed -i 1d dram.dat
+      filename=${filename##*/}
+      filename=${filename%.dat}
+      cp $DIR/build/ovp/elf/${filename}.host host.dat
+      echo "${filename}"
+    	obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
+    done
   else
     cp $DIR/$4 bram.dat
     split -n 2 bram.dat
@@ -194,6 +208,20 @@ else
       filename=${filename##*/}
       filename=${filename%.dat}
       cp $DIR/build/compliance/elf/${filename}.host host.dat
+      echo "${filename}"
+    	obj_dir/Vsoc $CYCLES 2> /dev/null
+    done
+  elif [ "$4" = 'ovp' ]
+  then
+    for filename in $DIR/build/ovp/dat/*.dat; do
+      cp $filename bram.dat
+      split -n 2 bram.dat
+      mv xaa iram.dat
+      mv xab dram.dat
+      sed -i 1d dram.dat
+      filename=${filename##*/}
+      filename=${filename%.dat}
+      cp $DIR/build/ovp/elf/${filename}.host host.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES 2> /dev/null
     done
