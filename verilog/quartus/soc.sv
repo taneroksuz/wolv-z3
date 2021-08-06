@@ -10,11 +10,10 @@ module soc
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic rtc = 0;
-  logic [31 : 0] count = 0;
-
-  logic clk_pll = 0;
-  logic [31 : 0] count_pll = 0;
+  logic rtc;
+  logic rst_pll;
+  logic clk_pll;
+  logic locked;
 
   logic [0  : 0] imemory_valid;
   logic [0  : 0] imemory_instr;
@@ -88,97 +87,69 @@ module soc
   logic [2  : 0] data_access_type;
   logic [2  : 0] data_release_type;
 
-  always_ff @(posedge clk) begin
-    if (count == clk_divider_rtc) begin
-      rtc <= ~rtc;
-      count <= 0;
-    end else begin
-      count <= count + 1;
-    end
-    if (count_pll == clk_divider_pll) begin
-      clk_pll <= ~clk_pll;
-      count_pll <= 0;
-    end else begin
-      count_pll <= count_pll + 1;
-    end
-  end
-
   always_comb begin
-    case(dmemory_addr) inside
-      [timer_base_addr:timer_top_addr-1]:
-        begin
-          timer_d = dmemory_valid;
-          uart_d = 0;
-          dram_d = 0;
-          iram_d = 0;
-        end
-      [uart_base_addr:uart_top_addr-1]:
-        begin
-          timer_d = 0;
-          uart_d = dmemory_valid;
-          dram_d = 0;
-          iram_d = 0;
-        end
-      [dram_base_addr:dram_top_addr-1]:
-        begin
-          timer_d = 0;
-          uart_d = 0;
-          dram_d = dmemory_valid;
-          iram_d = 0;
-        end
-      [iram_base_addr:iram_top_addr-1]:
-        begin
-          timer_d = 0;
-          uart_d = 0;
-          dram_d = 0;
-          iram_d = dmemory_valid;
-        end
-      default:
-        begin
-          timer_d = 0;
-          uart_d = 0;
-          dram_d = 0;
-          iram_d = 0;
-        end
-    endcase
 
-    case(imemory_addr) inside
-      [timer_base_addr:timer_top_addr-1]:
-        begin
-          timer_i = imemory_valid;
-          uart_i = 0;
-          dram_i = 0;
-          iram_i = 0;
-        end
-      [uart_base_addr:uart_top_addr-1]:
-        begin
-          timer_i = 0;
-          uart_i = imemory_valid;
-          dram_i = 0;
-          iram_i = 0;
-        end
-      [dram_base_addr:dram_top_addr-1]:
-        begin
-          timer_i = 0;
-          uart_i = 0;
-          dram_i = imemory_valid;
-          iram_i = 0;
-        end
-      [iram_base_addr:iram_top_addr-1]:
-        begin
-          timer_i = 0;
-          uart_i = 0;
-          dram_i = 0;
-          iram_i = imemory_valid;
-        end
-      default:
-        begin
-          timer_i = 0;
-          uart_i = 0;
-          dram_i = 0;
-          iram_i = 0;
-        end
-    endcase
+    if (dmemory_addr >= timer_base_addr &&
+      dmemory_addr < timer_top_addr) begin
+        timer_d = dmemory_valid;
+        uart_d = 0;
+        dram_d = 0;
+        iram_d = 0;
+    end else if (dmemory_addr >= uart_base_addr &&
+      dmemory_addr < uart_top_addr) begin
+        timer_d = 0;
+        uart_d = dmemory_valid;
+        dram_d = 0;
+        iram_d = 0;
+    end else if (dmemory_addr >= dram_base_addr &&
+      dmemory_addr < dram_top_addr) begin
+        timer_d = 0;
+        uart_d = 0;
+        dram_d = dmemory_valid;
+        iram_d = 0;
+    end else if (dmemory_addr >= iram_base_addr &&
+      dmemory_addr < iram_top_addr) begin
+        timer_d = 0;
+        uart_d = 0;
+        dram_d = 0;
+        iram_d = dmemory_valid;
+    end else begin
+      timer_d = 0;
+      uart_d = 0;
+      dram_d = 0;
+      iram_d = 0;
+    end
+
+    if (imemory_addr >= timer_base_addr &&
+      imemory_addr < timer_top_addr) begin
+        timer_i = imemory_valid;
+        uart_i = 0;
+        dram_i = 0;
+        iram_i = 0;
+    end else if (imemory_addr >= uart_base_addr &&
+      imemory_addr < uart_top_addr) begin
+        timer_i = 0;
+        uart_i = imemory_valid;
+        dram_i = 0;
+        iram_i = 0;
+    end else if (imemory_addr >= dram_base_addr &&
+      imemory_addr < dram_top_addr) begin
+        timer_i = 0;
+        uart_i = 0;
+        dram_i = imemory_valid;
+        iram_i = 0;
+    end else if (imemory_addr >= iram_base_addr &&
+      imemory_addr < iram_top_addr) begin
+        timer_i = 0;
+        uart_i = 0;
+        dram_i = 0;
+        iram_i = imemory_valid;
+    end else begin
+      timer_i = 0;
+      uart_i = 0;
+      dram_i = 0;
+      iram_i = 0;
+    end
 
     if (timer_d==1 & timer_i==1) begin
       timer_valid = 1;
@@ -325,9 +296,20 @@ module soc
 
   end
 
+  assign rst_pll = ~rst;
+
+  pll pll_comp
+  (
+    .refclk (clk),
+    .rst (rst_pll),
+    .outclk_0 (clk_pll),
+    .outclk_1 (rtc),
+    .locked (locked)
+  );
+
   cpu cpu_comp
   (
-    .rst (rst),
+    .rst (locked),
     .clk (clk_pll),
     .imemory_valid (imemory_valid),
     .imemory_instr (imemory_instr),
@@ -372,7 +354,7 @@ module soc
 
   uart uart_comp
   (
-    .rst (rst),
+    .rst (locked),
     .clk (clk_pll),
     .uart_valid (uart_valid),
     .uart_instr (uart_instr),
@@ -387,7 +369,7 @@ module soc
 
   timer timer_comp
   (
-    .rst (rst),
+    .rst (locked),
     .clk (clk_pll),
     .rtc (rtc),
     .timer_valid (timer_valid),

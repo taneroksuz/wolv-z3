@@ -68,71 +68,57 @@ module soc
 
   always_comb begin
 
-    case(dmemory_addr) inside
-      [timer_base_addr:timer_top_addr-1]:
-        begin
-          timer_d = dmemory_valid;
-          dram_d = 0;
-          iram_d = 0;
-        end
-      [uart_base_addr:uart_top_addr-1]:
-        begin
-          timer_d = 0;
-          dram_d = 0;
-          iram_d = dmemory_valid;
-        end
-      [dram_base_addr:dram_top_addr-1]:
-        begin
-          timer_d = 0;
-          dram_d = dmemory_valid;
-          iram_d = 0;
-        end
-      [iram_base_addr:iram_top_addr-1]:
-        begin
-          timer_d = 0;
-          dram_d = 0;
-          iram_d = dmemory_valid;
-        end
-      default:
-        begin
-          timer_d = 0;
-          dram_d = 0;
-          iram_d = 0;
-        end
-    endcase
+    if (dmemory_addr >= timer_base_addr &&
+      dmemory_addr < timer_top_addr) begin
+        timer_d = dmemory_valid;
+        dram_d = 0;
+        iram_d = 0;
+    end else if (dmemory_addr >= uart_base_addr &&
+      dmemory_addr < uart_top_addr) begin
+        timer_d = 0;
+        dram_d = 0;
+        iram_d = dmemory_valid;
+    end else if (dmemory_addr >= dram_base_addr &&
+      dmemory_addr < dram_top_addr) begin
+        timer_d = 0;
+        dram_d = dmemory_valid;
+        iram_d = 0;
+    end else if (dmemory_addr >= iram_base_addr &&
+      dmemory_addr < iram_top_addr) begin
+        timer_d = 0;
+        dram_d = 0;
+        iram_d = dmemory_valid;
+    end else begin
+      timer_d = 0;
+      dram_d = 0;
+      iram_d = 0;
+    end
 
-    case(imemory_addr) inside
-      [timer_base_addr:timer_top_addr-1]:
-        begin
-          timer_i = imemory_valid;
-          dram_i = 0;
-          iram_i = 0;
-        end
-      [uart_base_addr:uart_top_addr-1]:
-        begin
-          timer_i = 0;
-          dram_i = 0;
-          iram_i = imemory_valid;
-        end
-      [dram_base_addr:dram_top_addr-1]:
-        begin
-          timer_i = 0;
-          dram_i = imemory_valid;
-          iram_i = 0;
-        end
-      [iram_base_addr:iram_top_addr-1]:
-        begin
-          timer_i = 0;
-          dram_i = 0;
-          iram_i = imemory_valid;
-        end
-      default:
-        begin
-          timer_i = 0;
-          dram_i = 0;
-          iram_i = 0;
-        end
-    endcase
+    if (imemory_addr >= timer_base_addr &&
+      imemory_addr < timer_top_addr) begin
+        timer_i = imemory_valid;
+        dram_i = 0;
+        iram_i = 0;
+    end else if (imemory_addr >= uart_base_addr &&
+      imemory_addr < uart_top_addr) begin
+        timer_i = 0;
+        dram_i = 0;
+        iram_i = imemory_valid;
+    end else if (imemory_addr >= dram_base_addr &&
+      imemory_addr < dram_top_addr) begin
+        timer_i = 0;
+        dram_i = imemory_valid;
+        iram_i = 0;
+    end else if (imemory_addr >= iram_base_addr &&
+      imemory_addr < iram_top_addr) begin
+        timer_i = 0;
+        dram_i = 0;
+        iram_i = imemory_valid;
+    end else begin
+      timer_i = 0;
+      dram_i = 0;
+      iram_i = 0;
+    end
 
     if (timer_d==1 & timer_i==1) begin
       timer_valid = 1;

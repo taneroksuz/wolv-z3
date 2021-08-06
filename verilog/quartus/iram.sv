@@ -16,7 +16,6 @@ module iram
   logic [3 : 0][7 : 0] iram_block[0:2**iram_depth-1];
 
   logic [31 : 0] rdata;
-  logic [0  : 0] ready;
 
   initial begin
     $readmemh("iram.dat", iram_block);
@@ -37,12 +36,11 @@ module iram
 
     end
 
-    iram_rdata <= iram_block[iram_raddr];
+    rdata <= iram_block[iram_raddr];
 
   end
 
   assign iram_rdata = rdata;
-  assign iram_ready = ready;
 
 
 endmodule

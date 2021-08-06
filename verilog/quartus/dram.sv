@@ -16,7 +16,6 @@ module dram
   logic [3 : 0][7 : 0] dram_block[0:2**dram_depth-1];
 
   logic [31 : 0] rdata;
-  logic [0  : 0] ready;
 
   initial begin
     $readmemh("dram.dat", dram_block);
@@ -37,12 +36,11 @@ module dram
 
     end
 
-    dram_rdata <= dram_block[dram_raddr];
+    rdata <= dram_block[dram_raddr];
 
   end
 
   assign dram_rdata = rdata;
-  assign dram_ready = ready;
 
 
 endmodule

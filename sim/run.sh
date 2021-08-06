@@ -27,7 +27,7 @@ cd ${DIR}/sim/work
 start=`date +%s`
 if [ "$6" = 'wave' ]
 then
-	${VERILATOR} --sc -Wno-UNOPTFLAT --trace -trace-max-array 128 --trace-structs -f ${DIR}/sim/files.f --top-module soc --exe ${DIR}/verilog/tb/soc.cpp
+	${VERILATOR} --sc -Wno-UNOPTFLAT -Wno-UNSIGNED --trace -trace-max-array 128 --trace-structs -f ${DIR}/sim/files.f --top-module soc --exe ${DIR}/verilog/tb/soc.cpp
 	make -s -j -C obj_dir/ -f Vsoc.mk Vsoc
   if [ "$4" = 'dhrystone' ]
   then
@@ -132,7 +132,7 @@ then
     obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
   fi
 else
-	${VERILATOR} --sc -Wno-UNOPTFLAT -f ${DIR}/sim/files.f --top-module soc --exe ${DIR}/verilog/tb/soc.cpp
+	${VERILATOR} --sc -Wno-UNOPTFLAT -Wno-UNSIGNED -f ${DIR}/sim/files.f --top-module soc --exe ${DIR}/verilog/tb/soc.cpp
 	make -s -j -C obj_dir/ -f Vsoc.mk Vsoc
   if [ "$4" = 'dhrystone' ]
   then
