@@ -334,8 +334,8 @@ module soc
   (
     .clk (clk_pll),
     .iram_wen (iram_wen),
-    .iram_waddr (iram_addr),
-    .iram_raddr (iram_addr),
+    .iram_waddr (iram_addr[iram_depth+1:2]),
+    .iram_raddr (iram_addr[iram_depth+1:2]),
     .iram_wdata (iram_wdata),
     .iram_wstrb (iram_wstrb),
     .iram_rdata (iram_rdata)
@@ -345,8 +345,8 @@ module soc
   (
     .clk (clk_pll),
     .dram_wen (dram_wen),
-    .dram_waddr (dram_addr),
-    .dram_raddr (dram_addr),
+    .dram_waddr (dram_addr[dram_depth+1:2]),
+    .dram_raddr (dram_addr[dram_depth+1:2]),
     .dram_wdata (dram_wdata),
     .dram_wstrb (dram_wstrb),
     .dram_rdata (dram_rdata)
