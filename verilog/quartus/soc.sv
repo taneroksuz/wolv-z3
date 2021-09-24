@@ -10,10 +10,11 @@ module soc
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic rtc;
-  logic rst_pll;
-  logic clk_pll;
-  logic locked;
+  logic rtc = 0;
+  logic [31 : 0] count = 0;
+
+  logic clk_pll = 0;
+  logic [31 : 0] count_pll = 0;
 
   logic [0  : 0] imemory_valid;
   logic [0  : 0] imemory_instr;
@@ -86,6 +87,21 @@ module soc
 
   logic [2  : 0] data_access_type;
   logic [2  : 0] data_release_type;
+
+  always_ff @(posedge clk) begin
+    if (count == clk_divider_rtc) begin
+      rtc <= ~rtc;
+      count <= 0;
+    end else begin
+      count <= count + 1;
+    end
+    if (count_pll == clk_divider_pll) begin
+      clk_pll <= ~clk_pll;
+      count_pll <= 0;
+    end else begin
+      count_pll <= count_pll + 1;
+    end
+  end
 
   always_comb begin
 
@@ -296,20 +312,9 @@ module soc
 
   end
 
-  assign rst_pll = ~rst;
-
-  pll pll_comp
-  (
-    .refclk (clk),
-    .rst (rst_pll),
-    .outclk_0 (clk_pll),
-    .outclk_1 (rtc),
-    .locked (locked)
-  );
-
   cpu cpu_comp
   (
-    .rst (locked),
+    .rst (rst),
     .clk (clk_pll),
     .imemory_valid (imemory_valid),
     .imemory_instr (imemory_instr),
@@ -354,7 +359,7 @@ module soc
 
   uart uart_comp
   (
-    .rst (locked),
+    .rst (rst),
     .clk (clk_pll),
     .uart_valid (uart_valid),
     .uart_instr (uart_instr),
@@ -369,7 +374,7 @@ module soc
 
   timer timer_comp
   (
-    .rst (locked),
+    .rst (rst),
     .clk (clk_pll),
     .rtc (rtc),
     .timer_valid (timer_valid),
