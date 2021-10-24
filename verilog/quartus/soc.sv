@@ -58,14 +58,19 @@ module soc
   logic [31 : 0] uart_rdata;
   logic [0  : 0] uart_ready;
 
-  logic [0  : 0] timer_valid;
-  logic [0  : 0] timer_instr;
-  logic [31 : 0] timer_addr;
-  logic [31 : 0] timer_wdata;
-  logic [3  : 0] timer_wstrb;
-  logic [31 : 0] timer_rdata;
-  logic [0  : 0] timer_ready;
-  logic [0  : 0] timer_irpt;
+  logic [0  : 0] clint_valid;
+  logic [0  : 0] clint_instr;
+  logic [31 : 0] clint_addr;
+  logic [31 : 0] clint_wdata;
+  logic [3  : 0] clint_wstrb;
+  logic [31 : 0] clint_rdata;
+  logic [0  : 0] clint_ready;
+
+  logic [2**plic_contexts-1 : 0] meip;
+  logic [2**clint_contexts-1 : 0] msip;
+  logic [2**clint_contexts-1 : 0] mtip;
+
+  logic [63 : 0] mtime;
 
   logic [0  : 0] iram_i;
   logic [0  : 0] iram_d;
@@ -73,13 +78,13 @@ module soc
   logic [0  : 0] dram_d;
   logic [0  : 0] uart_i;
   logic [0  : 0] uart_d;
-  logic [0  : 0] timer_i;
-  logic [0  : 0] timer_d;
+  logic [0  : 0] clint_i;
+  logic [0  : 0] clint_d;
 
   parameter [2  : 0] iram_access = 0;
   parameter [2  : 0] dram_access = 1;
   parameter [2  : 0] uart_access = 2;
-  parameter [2  : 0] timer_access = 3;
+  parameter [2  : 0] clint_access = 3;
   parameter [2  : 0] non_access = 4;
 
   logic [2  : 0] instr_access_type;
@@ -105,103 +110,103 @@ module soc
 
   always_comb begin
 
-    if (dmemory_addr >= timer_base_addr &&
-      dmemory_addr < timer_top_addr) begin
-        timer_d = dmemory_valid;
+    if (dmemory_addr >= clint_base_addr &&
+      dmemory_addr < clint_top_addr) begin
+        clint_d = dmemory_valid;
         uart_d = 0;
         dram_d = 0;
         iram_d = 0;
     end else if (dmemory_addr >= uart_base_addr &&
       dmemory_addr < uart_top_addr) begin
-        timer_d = 0;
+        clint_d = 0;
         uart_d = dmemory_valid;
         dram_d = 0;
         iram_d = 0;
     end else if (dmemory_addr >= dram_base_addr &&
       dmemory_addr < dram_top_addr) begin
-        timer_d = 0;
+        clint_d = 0;
         uart_d = 0;
         dram_d = dmemory_valid;
         iram_d = 0;
     end else if (dmemory_addr >= iram_base_addr &&
       dmemory_addr < iram_top_addr) begin
-        timer_d = 0;
+        clint_d = 0;
         uart_d = 0;
         dram_d = 0;
         iram_d = dmemory_valid;
     end else begin
-      timer_d = 0;
+      clint_d = 0;
       uart_d = 0;
       dram_d = 0;
       iram_d = 0;
     end
 
-    if (imemory_addr >= timer_base_addr &&
-      imemory_addr < timer_top_addr) begin
-        timer_i = imemory_valid;
+    if (imemory_addr >= clint_base_addr &&
+      imemory_addr < clint_top_addr) begin
+        clint_i = imemory_valid;
         uart_i = 0;
         dram_i = 0;
         iram_i = 0;
     end else if (imemory_addr >= uart_base_addr &&
       imemory_addr < uart_top_addr) begin
-        timer_i = 0;
+        clint_i = 0;
         uart_i = imemory_valid;
         dram_i = 0;
         iram_i = 0;
     end else if (imemory_addr >= dram_base_addr &&
       imemory_addr < dram_top_addr) begin
-        timer_i = 0;
+        clint_i = 0;
         uart_i = 0;
         dram_i = imemory_valid;
         iram_i = 0;
     end else if (imemory_addr >= iram_base_addr &&
       imemory_addr < iram_top_addr) begin
-        timer_i = 0;
+        clint_i = 0;
         uart_i = 0;
         dram_i = 0;
         iram_i = imemory_valid;
     end else begin
-      timer_i = 0;
+      clint_i = 0;
       uart_i = 0;
       dram_i = 0;
       iram_i = 0;
     end
 
-    if (timer_d==1 & timer_i==1) begin
-      timer_valid = 1;
+    if (clint_d==1 & clint_i==1) begin
+      clint_valid = 1;
       uart_valid = 0;
       dram_valid = 0;
       iram_valid = 0;
       instr_access_type = non_access;
-      data_access_type = timer_access;
+      data_access_type = clint_access;
     end else if (uart_d==1 & uart_i==1) begin
-      timer_valid = 0;
+      clint_valid = 0;
       uart_valid = 1;
       dram_valid = 0;
       iram_valid = 0;
       instr_access_type = non_access;
       data_access_type = uart_access;
     end else if (dram_d==1 & dram_i==1) begin
-      timer_valid = 0;
+      clint_valid = 0;
       uart_valid = 0;
       dram_valid = 1;
       iram_valid = 0;
       instr_access_type = non_access;
       data_access_type = dram_access;
     end else if (iram_d==1 & iram_i==1) begin
-      timer_valid = 0;
+      clint_valid = 0;
       uart_valid = 0;
       dram_valid = 0;
       iram_valid = 1;
       instr_access_type = non_access;
       data_access_type = iram_access;
     end else begin
-      timer_valid = timer_d | timer_i;
+      clint_valid = clint_d | clint_i;
       uart_valid = uart_d | uart_i;
       dram_valid = dram_d | dram_i;
       iram_valid = iram_d | iram_i;
-      if (timer_i == 1) begin
-        instr_access_type = timer_access;
+      if (clint_i == 1) begin
+        instr_access_type = clint_access;
       end else if (uart_i == 1) begin
         instr_access_type = uart_access;
       end else if (dram_i == 1) begin
@@ -211,8 +216,8 @@ module soc
       end else begin
         instr_access_type = non_access;
       end
-      if (timer_d == 1) begin
-        data_access_type = timer_access;
+      if (clint_d == 1) begin
+        data_access_type = clint_access;
       end else if (uart_d == 1) begin
         data_access_type = uart_access;
       end else if (dram_d == 1) begin
@@ -241,10 +246,10 @@ module soc
     uart_wdata = uart_d ? dmemory_wdata : imemory_wdata;
     uart_wstrb = uart_d ? dmemory_wstrb : imemory_wstrb;
 
-    timer_instr = timer_d ? dmemory_instr : imemory_instr;
-    timer_addr = timer_d ? dmemory_addr ^ timer_base_addr : imemory_addr ^ timer_base_addr;
-    timer_wdata = timer_d ? dmemory_wdata : imemory_wdata;
-    timer_wstrb = timer_d ? dmemory_wstrb : imemory_wstrb;
+    clint_instr = clint_d ? dmemory_instr : imemory_instr;
+    clint_addr = clint_d ? dmemory_addr ^ clint_base_addr : imemory_addr ^ clint_base_addr;
+    clint_wdata = clint_d ? dmemory_wdata : imemory_wdata;
+    clint_wstrb = clint_d ? dmemory_wstrb : imemory_wstrb;
 
     if (instr_release_type == iram_access) begin
       imemory_rdata = iram_rdata;
@@ -255,9 +260,9 @@ module soc
     end else if  (instr_release_type == uart_access) begin
       imemory_rdata = uart_rdata;
       imemory_ready = uart_ready;
-    end else if  (instr_release_type == timer_access) begin
-      imemory_rdata = timer_rdata;
-      imemory_ready = timer_ready;
+    end else if  (instr_release_type == clint_access) begin
+      imemory_rdata = clint_rdata;
+      imemory_ready = clint_ready;
     end else begin
       imemory_rdata = 0;
       imemory_ready = 0;
@@ -272,9 +277,9 @@ module soc
     end else if  (data_release_type == uart_access) begin
       dmemory_rdata = uart_rdata;
       dmemory_ready = uart_ready;
-    end else if  (data_release_type == timer_access) begin
-      dmemory_rdata = timer_rdata;
-      dmemory_ready = timer_ready;
+    end else if  (data_release_type == clint_access) begin
+      dmemory_rdata = clint_rdata;
+      dmemory_ready = clint_ready;
     end else begin
       dmemory_rdata = 0;
       dmemory_ready = 0;
@@ -287,10 +292,10 @@ module soc
       instr_release_type <= non_access;
       data_release_type <= non_access;
     end else begin
-      if (imemory_valid == 1 && (timer_ready | dram_ready | iram_ready) == 1) begin
+      if (imemory_valid == 1 && (clint_ready | dram_ready | iram_ready) == 1) begin
         instr_release_type <= instr_access_type;
       end
-      if (dmemory_valid == 1 && (timer_ready | dram_ready | iram_ready) == 1) begin
+      if (dmemory_valid == 1 && (clint_ready | dram_ready | iram_ready) == 1) begin
         data_release_type <= data_access_type;
       end
     end
@@ -330,9 +335,10 @@ module soc
     .dmemory_wstrb (dmemory_wstrb),
     .dmemory_rdata (dmemory_rdata),
     .dmemory_ready (dmemory_ready),
-    .extern_irpt (1'b0),
-    .timer_irpt (timer_irpt),
-    .soft_irpt (1'b0)
+    .meip (meip[0]),
+    .msip (msip[0]),
+    .mtip (mtip[0]),
+    .mtime (mtime)
   );
 
   iram iram_comp
@@ -372,19 +378,21 @@ module soc
     .uart_tx (tx)
   );
 
-  timer timer_comp
+  clint clint_comp
   (
     .rst (rst),
     .clk (clk_pll),
     .rtc (rtc),
-    .timer_valid (timer_valid),
-    .timer_instr (timer_instr),
-    .timer_addr (timer_addr),
-    .timer_wdata (timer_wdata),
-    .timer_wstrb (timer_wstrb),
-    .timer_rdata (timer_rdata),
-    .timer_ready (timer_ready),
-    .timer_irpt (timer_irpt)
+    .clint_valid (clint_valid),
+    .clint_instr (clint_instr),
+    .clint_addr (clint_addr),
+    .clint_wdata (clint_wdata),
+    .clint_wstrb (clint_wstrb),
+    .clint_rdata (clint_rdata),
+    .clint_ready (clint_ready),
+    .clint_msip (msip),
+    .clint_mtip (mtip),
+    .clint_mtime (mtime)
   );
 
 endmodule

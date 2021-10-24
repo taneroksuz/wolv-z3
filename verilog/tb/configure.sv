@@ -2,20 +2,29 @@ package configure;
 	timeunit 1ns;
 	timeprecision 1ps;
 
+	parameter prefetch_depth = 4;
+
+	parameter iram_depth = 15;
+
+	parameter dram_depth = 15;
+
+  parameter clint_contexts = 0;
+
+  parameter plic_contexts = 0;
+
 	parameter iram_base_addr = 32'h0;
 	parameter iram_top_addr = 32'h20000;
 
 	parameter dram_base_addr = 32'h20000;
 	parameter dram_top_addr = 32'h40000;
 
-	parameter uart_base_addr = 32'h100000;
-	parameter uart_top_addr = 32'h100004;
+  parameter uart_base_addr = 32'h100000;
+  parameter uart_top_addr  = 32'h100004;
 
-	parameter timer_base_addr = 32'h200000;
-	parameter timer_top_addr = 32'h200010;
+  parameter clint_base_addr = 32'h2000000;
+  parameter clint_top_addr  = 32'h200C000;
 
-	parameter prefetch_depth = 4;
-	parameter iram_depth = 15;
-	parameter dram_depth = 15;
+  parameter plic_base_addr = 32'h0C000000;
+  parameter plic_top_addr  = 32'h10000000;
 
 endpackage

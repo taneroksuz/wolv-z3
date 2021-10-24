@@ -20,7 +20,7 @@
 ../../verilog/fetch_stage.sv
 ../../verilog/decode_stage.sv
 ../../verilog/execute_stage.sv
-../../verilog/timer.sv
+../../verilog/clint.sv
 ../../verilog/cpu.sv
 ../../verilog/tb/dram.sv
 ../../verilog/tb/iram.sv
