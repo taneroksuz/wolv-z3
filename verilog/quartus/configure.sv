@@ -8,8 +8,8 @@ package configure;
 	parameter dram_base_addr = 32'h20000;
 	parameter dram_top_addr = 32'h21000;
 
-	parameter uart_base_addr = 32'h100000;
-	parameter uart_top_addr = 32'h100004;
+	parameter uart_base_addr = 32'h1000000;
+	parameter uart_top_addr = 32'h1000004;
 
   parameter clint_base_addr = 32'h2000000;
   parameter clint_top_addr  = 32'h200C000;

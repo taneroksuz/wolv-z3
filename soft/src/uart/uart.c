@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #define CYCLES_PER_SECONDS 50000000
-#define UART_BASE_ADDRESS 0x100000
+#define UART_BASE_ADDRESS 0x1000000
 
 void putch(char ch)
 {
