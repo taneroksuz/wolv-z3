@@ -14,10 +14,10 @@ package configure;
   parameter plic_contexts = 0;
 
   parameter iram_base_addr = 32'h0;
-  parameter iram_top_addr = 32'h40000;
+  parameter iram_top_addr  = 32'h40000;
 
   parameter dram_base_addr = 32'h40000;
-  parameter dram_top_addr = 32'h80000;
+  parameter dram_top_addr  = 32'h80000;
 
   parameter uart_base_addr = 32'h1000000;
   parameter uart_top_addr  = 32'h1000004;

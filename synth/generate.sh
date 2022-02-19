@@ -22,7 +22,7 @@ if [ -f "${DIR}/build/${TEST}/dat/${TEST}.dat" ]; then
 		rm bram.dat
 fi
 
-${SV2V} ${DIR}/verilog/${FPGA}/configure.sv \
+${SV2V} ${DIR}/fpga/${FPGA}/configure.sv \
 				${DIR}/verilog/constants.sv \
 				${DIR}/verilog/functions.sv \
 				${DIR}/verilog/wires.sv \
@@ -49,7 +49,7 @@ ${SV2V} ${DIR}/verilog/${FPGA}/configure.sv \
 				${DIR}/verilog/cpu.sv \
 				> cpu.v
 
-cp ${DIR}/verilog/${FPGA}/configure.sv configure.sv
-cp ${DIR}/verilog/${FPGA}/iram.sv iram.sv
-cp ${DIR}/verilog/${FPGA}/dram.sv dram.sv
-cp ${DIR}/verilog/${FPGA}/soc.sv soc.sv
+cp ${DIR}/fpga/${FPGA}/configure.sv configure.sv
+cp ${DIR}/fpga/${FPGA}/iram.sv iram.sv
+cp ${DIR}/fpga/${FPGA}/dram.sv dram.sv
+cp ${DIR}/fpga/${FPGA}/soc.sv soc.sv
