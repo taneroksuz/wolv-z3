@@ -17,7 +17,7 @@ ENTRY(_start)
 MEMORY
 {
   iram : ORIGIN = 0x00000, LENGTH = 128K
-  dram : ORIGIN = 0x20000, LENGTH = 128K
+  dram : ORIGIN = 0x40000, LENGTH = 128K
 }
 
 /*----------------------------------------------------------------------*/
