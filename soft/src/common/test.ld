@@ -12,12 +12,12 @@
    specifically one of the entires in bfd/cpu-mips.c */
 
 OUTPUT_ARCH( "riscv" )
-ENTRY(_start)
+ENTRY(rvtest_entry_point)
 
 MEMORY
 {
-  iram : ORIGIN = 0x00000, LENGTH = 128K
-  dram : ORIGIN = 0x40000, LENGTH = 128K
+  iram : ORIGIN = 0x000000, LENGTH = 1M
+  dram : ORIGIN = 0x100000, LENGTH = 1M
 }
 
 /*----------------------------------------------------------------------*/

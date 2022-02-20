@@ -5,19 +5,19 @@ package configure;
 
   parameter prefetch_depth = 4;
 
-  parameter iram_depth = 16;
+  parameter iram_depth = 18;
 
-  parameter dram_depth = 16;
+  parameter dram_depth = 18;
 
   parameter clint_contexts = 0;
 
   parameter plic_contexts = 0;
 
-  parameter iram_base_addr = 32'h0;
-  parameter iram_top_addr  = 32'h40000;
+  parameter iram_base_addr = 32'h000000;
+  parameter iram_top_addr  = 32'h100000;
 
-  parameter dram_base_addr = 32'h40000;
-  parameter dram_top_addr  = 32'h80000;
+  parameter dram_base_addr = 32'h100000;
+  parameter dram_top_addr  = 32'h200000;
 
   parameter uart_base_addr = 32'h1000000;
   parameter uart_top_addr  = 32'h1000004;

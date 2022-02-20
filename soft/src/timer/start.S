@@ -1,7 +1,7 @@
   .section .text
-  .globl _start
+  .globl rvtest_entry_point
   .globl _mtvec
-_start:
+rvtest_entry_point:
   li  x1, 0
   li  x2, 0
   li  x3, 0
