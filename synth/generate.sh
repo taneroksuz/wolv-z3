@@ -46,10 +46,11 @@ ${SV2V} ${DIR}/fpga/${FPGA}/configure.sv \
 				${DIR}/verilog/execute_stage.sv \
 				${DIR}/verilog/clint.sv \
 				${DIR}/verilog/uart.sv \
+				${DIR}/verilog/itim.sv \
+				${DIR}/verilog/dtim.sv \
 				${DIR}/verilog/cpu.sv \
 				> cpu.v
 
 cp ${DIR}/fpga/${FPGA}/configure.sv configure.sv
-cp ${DIR}/fpga/${FPGA}/iram.sv iram.sv
-cp ${DIR}/fpga/${FPGA}/dram.sv dram.sv
+cp ${DIR}/fpga/${FPGA}/bram.sv bram.sv
 cp ${DIR}/fpga/${FPGA}/soc.sv soc.sv

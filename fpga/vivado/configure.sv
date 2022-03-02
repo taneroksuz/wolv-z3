@@ -2,11 +2,21 @@ package configure;
   timeunit 1ns;
   timeprecision 1ps;
 
-  parameter iram_base_addr = 32'h0;
-  parameter iram_top_addr  = 32'h4000;
+  parameter prefetch_depth = 4;
 
-  parameter dram_base_addr = 32'h20000;
-  parameter dram_top_addr  = 32'h24000;
+  parameter bram_depth = 13;
+
+  parameter itim_depth = 12;
+  parameter dtim_depth = 12;
+
+  parameter bram_base_addr = 32'h0;
+  parameter bram_top_addr  = 32'h8000;
+
+  parameter itim_base_addr = 32'h0;
+  parameter itim_top_addr  = 32'h4000;
+
+  parameter dtim_base_addr = 32'h4000;
+  parameter dtim_top_addr  = 32'h8000;
 
   parameter uart_base_addr = 32'h1000000;
   parameter uart_top_addr  = 32'h1000004;
@@ -16,10 +26,6 @@ package configure;
 
   parameter plic_base_addr = 32'h0C000000;
   parameter plic_top_addr  = 32'h10000000;
-
-  parameter prefetch_depth = 4;
-  parameter iram_depth = 12;
-  parameter dram_depth = 12;
 
   parameter clk_freq = 100000000; // 100MHz
   parameter clk_pll = 50000000; // 50MHz

@@ -21,7 +21,10 @@
 ../../verilog/decode_stage.sv
 ../../verilog/execute_stage.sv
 ../../verilog/clint.sv
+../../verilog/itim.sv
+../../verilog/dtim.sv
 ../../verilog/cpu.sv
-../../verilog/tb/dram.sv
-../../verilog/tb/iram.sv
+../../verilog/tb/bram.sv
+../../verilog/tb/check.sv
+../../verilog/tb/print.sv
 ../../verilog/tb/soc.sv

@@ -16,8 +16,7 @@ ENTRY(rvtest_entry_point)
 
 MEMORY
 {
-  iram : ORIGIN = 0x000000, LENGTH = 1M
-  dram : ORIGIN = 0x100000, LENGTH = 1M
+  ram  : ORIGIN = 0x0, LENGTH = 1M
 }
 
 /*----------------------------------------------------------------------*/
@@ -31,34 +30,28 @@ SECTIONS
   .text.init : {
     . = 0x0;
     *(.text.init)
-  } > iram
+  } > ram
 
-
-  .tohost : {
-    . = ALIGN(0x1000);
-    *(.tohost)
-  } > iram
-
-  .text : { *(.text) } > iram
+  .text : { *(.text) } > ram
 
   /* data segment */
-  .rodata : { *(.rodata) } > dram
+  .rodata : { *(.rodata) } > ram
 
   /* data segment */
-  .data : { *(.data) } > dram
+  .data : { *(.data) } > ram
 
   .sdata : {
     __global_pointer$ = . + 0x800;
     *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata*)
     *(.sdata .sdata.* .gnu.linkonce.s.*)
-  } > dram
+  } > ram
 
   /* bss segment */
   .sbss : {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
-  } > dram
-  .bss : { *(.bss) } > dram
+  } > ram
+  .bss : { *(.bss) } > ram
 
   /* thread-local data segment */
   .tdata :
@@ -66,12 +59,17 @@ SECTIONS
     _tdata_begin = .;
     *(.tdata)
     _tdata_end = .;
-  } > dram
+  } > ram
   .tbss :
   {
     *(.tbss)
     _tbss_end = .;
     /* End of uninitalized data segement */
     _end = .;
-  } > dram
+  } > ram
+
+  .tohost : {
+    . = ALIGN(0x1000);
+    *(.tohost)
+  } > ram
 }
