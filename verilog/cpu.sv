@@ -71,6 +71,10 @@ module cpu
   execute_out_type execute_out_q;
   prefetch_in_type prefetch_in;
   prefetch_out_type prefetch_out;
+  mem_in_type itim_in;
+  mem_out_type itim_out;
+  mem_in_type dtim_in;
+  mem_out_type dtim_out;
   mem_in_type imem_in;
   mem_out_type imem_out;
   mem_in_type dmem_in;
@@ -212,8 +216,8 @@ module cpu
     .csr_out (csr_out),
     .prefetch_out (prefetch_out),
     .prefetch_in (prefetch_in),
-    .imem_out (imem_out),
-    .imem_in (imem_in),
+    .imem_out (itim_out),
+    .imem_in (itim_in),
     .a (fetch_in_a),
     .d (fetch_in_d),
     .y (fetch_out_y),
@@ -238,7 +242,7 @@ module cpu
     .forwarding_rin (forwarding_rin),
     .csr_out (csr_out),
     .csr_din (csr_din),
-    .dmem_in (dmem_in),
+    .dmem_in (dtim_in),
     .a (decode_in_a),
     .d (decode_in_d),
     .y (decode_out_y),
@@ -267,13 +271,32 @@ module cpu
     .forwarding_ein (forwarding_ein),
     .csr_out (csr_out),
     .csr_ein (csr_ein),
-    .dmem_out (dmem_out),
+    .dmem_out (dtim_out),
     .a (execute_in_a),
     .d (execute_in_d),
     .y (execute_out_y),
     .q (execute_out_q)
   );
 
+  itim itim_comp
+  (
+    .rst (rst),
+    .clk (clk),
+    .itim_in (itim_in),
+    .itim_out (itim_out),
+    .imem_out (imem_out),
+    .imem_in (imem_in)
+  );
+
+  dtim dtim_comp
+  (
+    .rst (rst),
+    .clk (clk),
+    .dtim_in (dtim_in),
+    .dtim_out (dtim_out),
+    .dmem_out (dmem_out),
+    .dmem_in (dmem_in)
+  );
 
   assign imemory_valid = imem_in.mem_valid;
   assign imemory_instr = imem_in.mem_instr;

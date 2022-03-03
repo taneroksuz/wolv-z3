@@ -6,8 +6,11 @@ package configure;
 
   parameter bram_depth = 13;
 
-  parameter itim_depth = 12;
-  parameter dtim_depth = 12;
+  parameter itim_width = 2;
+  parameter itim_depth = 10;
+
+  parameter dtim_width = 2;
+  parameter dtim_depth = 10;
 
   parameter bram_base_addr = 32'h0;
   parameter bram_top_addr  = 32'h8000;

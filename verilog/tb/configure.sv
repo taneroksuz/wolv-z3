@@ -8,10 +8,10 @@ package configure;
   parameter bram_depth = 18;
 
   parameter itim_width = 2;
-  parameter itim_depth = 17;
+  parameter itim_depth = 10;
 
   parameter dtim_width = 2;
-  parameter dtim_depth = 17;
+  parameter dtim_depth = 10;
 
   parameter clint_contexts = 0;
 
