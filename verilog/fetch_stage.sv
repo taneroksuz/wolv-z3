@@ -52,6 +52,7 @@ module fetch_stage
     prefetch_in.ready = imem_out.mem_ready;
 
     imem_in.mem_valid = 1;
+    imem_in.mem_fence = d.d.fence;
     imem_in.mem_instr = 1;
     imem_in.mem_addr = prefetch_out.fpc;
     imem_in.mem_wdata = 0;

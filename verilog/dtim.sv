@@ -1,6 +1,130 @@
 import configure::*;
 import wires::*;
 
+module dtim_tag
+(
+  input logic clk,
+  input logic [0 : 0] wen,
+  input logic [dtim_depth-1 : 0] waddr,
+  input logic [dtim_depth-1 : 0] raddr,
+  input logic [29-(dtim_depth+dtim_width) : 0] wdata,
+  output logic [29-(dtim_depth+dtim_width) : 0] rdata
+);
+  timeunit 1ns;
+  timeprecision 1ps;
+
+  logic [29-(dtim_depth+dtim_width):0] tag_array[0:2**dtim_depth-1];
+  logic [29-(dtim_depth+dtim_width):0] tag_rdata;
+
+  initial begin
+    tag_array = '{default:'0};
+    tag_rdata = 0;
+  end
+
+  assign rdata = tag_rdata;
+
+  always_ff @(posedge clk) begin
+    if (wen == 1) begin
+      tag_array[waddr] <= wdata;
+    end
+    tag_rdata <= tag_array(raddr);
+  end
+
+endmodule
+
+module dtim_data
+(
+  input logic clk,
+  input logic [0 : 0] wen,
+  input logic [dtim_depth-1 : 0] waddr,
+  input logic [dtim_depth-1 : 0] raddr,
+  input logic [2**dtim_width*32-1 : 0] wdata,
+  output logic [2**dtim_width*32-1 : 0] rdata
+);
+  timeunit 1ns;
+  timeprecision 1ps;
+
+  logic [2**dtim_width*32-1 : 0] data_array[0:2**dtim_depth-1];
+  logic [2**dtim_width*32-1 : 0] data_rdata;
+
+  initial begin
+    data_array = '{default:'0};
+    data_rdata = 0;
+  end
+
+  assign rdata = tag_rdata;
+
+  always_ff @(posedge clk) begin
+    if (wen == 1) begin
+      data_array[waddr] <= wdata;
+    end
+    data_rdata <= data_array(raddr);
+  end
+
+endmodule
+
+module dtim_valid
+(
+  input logic clk,
+  input logic [0 : 0] wen,
+  input logic [dtim_depth-1 : 0] waddr,
+  input logic [dtim_depth-1 : 0] raddr,
+  input logic [0 : 0] wdata,
+  output logic [0 : 0] rdata
+);
+  timeunit 1ns;
+  timeprecision 1ps;
+
+  logic [0 : 0] valid_array[0:2**dtim_depth-1];
+  logic [0 : 0] valid_rdata;
+
+  initial begin
+    valid_array = '{default:'0};
+    valid_rdata = 0;
+  end
+
+  assign rdata = valid_rdata;
+
+  always_ff @(posedge clk) begin
+    if (wen == 1) begin
+      valid_array[waddr] <= wdata;
+    end
+    valid_rdata <= valid_array(raddr);
+  end
+
+endmodule
+
+module dtim_lock
+(
+  input logic clk,
+  input logic [0 : 0] wen,
+  input logic [dtim_depth-1 : 0] waddr,
+  input logic [dtim_depth-1 : 0] raddr,
+  input logic [0 : 0] wdata,
+  output logic [0 : 0] rdata
+);
+  timeunit 1ns;
+  timeprecision 1ps;
+
+  logic [0 : 0] lock_array[0:2**dtim_depth-1];
+  logic [0 : 0] lock_rdata;
+
+  initial begin
+    lock_array = '{default:'0};
+    lock_rdata = 0;
+  end
+
+  assign rdata = lock_rdata;
+
+  always_ff @(posedge clk) begin
+    if (wen == 1) begin
+      lock_array[waddr] <= wdata;
+    end
+    lock_rdata <= lock_array(raddr);
+  end
+
+endmodule
+
 module dtim
 (
   input logic rst,
@@ -17,15 +141,10 @@ module dtim
   parameter [2:0] miss = 1;
   parameter [2:0] load = 2;
   parameter [2:0] store = 3;
-  parameter [2:0] inv = 4;
-
-  logic [31-(dtim_width+dtim_depth):0] dtim_tag[0:2**dtim_depth-1];
-  logic [2**dtim_depth*32-1 : 0] dtim_block[0:2**dtim_depth-1];
-  logic [0 : 0] dtim_valid[0:2**dtim_depth-1];
-  logic [0 : 0] dtim_lock[0:2**dtim_depth-1];
+  parameter [2:0] fence = 4;
 
   typedef struct packed{
-    logic [31-(dtim_width+dtim_depth):0] tag;
+    logic [29-(dtim_depth+dtim_width):0] tag;
     logic [dtim_width-1:0] wid;
     logic [dtim_depth-1:0] did;
     logic [31:0] addr;
@@ -33,7 +152,7 @@ module dtim
     logic [3:0] strb;
     logic [0:0] rden;
     logic [0:0] wren;
-    logic [0:0] inv;
+    logic [0:0] fence;
   } front_type;
 
   parameter front_type init_front = '{
@@ -45,7 +164,7 @@ module dtim
     strb : 0,
     rden : 0,
     wren : 0,
-    inv : 0
+    fence : 0
   };
 
   typedef struct packed{
@@ -53,7 +172,7 @@ module dtim
   } back_type;
 
   parameter back_type init_back = '{
-    state : inv
+    state : fence
   };
 
   front_type r_f,rin_f;

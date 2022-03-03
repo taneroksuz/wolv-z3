@@ -1009,6 +1009,7 @@ package wires;
 
   typedef struct packed{
     logic [0  : 0] mem_valid;
+    logic [0  : 0] mem_fence;
     logic [0  : 0] mem_instr;
     logic [31 : 0] mem_addr;
     logic [31 : 0] mem_wdata;
