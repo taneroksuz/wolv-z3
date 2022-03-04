@@ -7,7 +7,7 @@ package configure;
 
   parameter bram_depth = 18;
 
-  parameter itim_enable = 0;
+  parameter itim_enable = 1;
   parameter itim_width = 2;
   parameter itim_depth = 10;
 

@@ -219,14 +219,17 @@ module itim_ctrl
   typedef struct packed{
     logic [29-(itim_depth+itim_width):0] tag;
     logic [2**itim_width*32-1:0] data;
-    logic [itim_width-1:0] wid;
     logic [itim_depth-1:0] did;
+    logic [itim_width-1:0] wid;
+    logic [itim_width-1:0] cnt;
     logic [31:0] addr;
     logic [31:0] rdata;
     logic [0:0] ready;
     logic [0:0] fence;
     logic [0:0] valid;
+    logic [0:0] lock;
     logic [0:0] en;
+    logic [0:0] wen;
     logic [0:0] hit;
     logic [0:0] miss;
     logic [0:0] load;
@@ -236,14 +239,17 @@ module itim_ctrl
   parameter back_type init_back = '{
     tag : 0,
     data : 0,
-    wid : 0,
     did : 0,
+    wid : 0,
+    cnt : 0,
     addr : 0,
     rdata : 0,
     ready : 0,
     fence : 0,
     valid : 0,
+    lock : 0,
     en : 0,
+    wen : 0,
     hit : 0,
     miss : 0,
     load : 0,
@@ -266,6 +272,7 @@ module itim_ctrl
     if (itim_in.mem_valid == 1) begin
       if (itim_in.mem_fence == 1) begin
         v_f.fence = itim_in.mem_fence;
+        v_f.did = 0;
       end else begin
         v_f.en = itim_in.mem_valid;
         v_f.addr = itim_in.mem_addr;
@@ -302,22 +309,132 @@ module itim_ctrl
       hit :
         begin
 
+          v_b.wen = 0;
+          v_b.lock = ictrl_in.lock_out.rdata;
+
+          if (v_b.lock == 0) begin
+            v_b.miss = v_b.en;
+          end else if (|(ictrl_in.tag_out.rdata ^ v_b.tag) == 1) begin
+            v_b.load = v_b.en;
+          end else begin
+            v_b.hit = v_b.en;
+          end
+
+          if (v_b.miss == 1) begin
+            v_b.state = miss;
+            v_b.addr[itim_width+2:0] = 0;
+            v_b.cnt = 0;
+            v_b.valid = 1;
+          end else if (v_b.load == 1) begin
+            v_b.state = load;
+            v_b.valid = 1;
+          end else begin
+            v_b.data = ictrl_in.data_out.rdata;
+            v_b.valid = 0;
+          end
+
         end
       miss :
         begin
+
+          v_b.wen = 0;
+          v_b.lock = 0;
+
+          if (imem_out.mem_ready == 1) begin
+            v_b.data[32*v_b.cnt +: 32] = imem_out.mem_rdata;
+            if (v_b.cnt == 2*itim_width-1) begin
+              v_b.wen = 1;
+              v_b.lock = 1;
+              v_b.valid = 0;
+              v_b.state = hit;
+            end else begin
+              v_b.addr = v_b.addr + 4;
+              v_b.cnt = v_b.cnt + 1;
+            end
+          end
 
         end
       load :
         begin
 
+          v_b.wen = 0;
+          v_b.lock = 0;
+          v_b.valid = 0;
+
+          if (imem_out.mem_ready == 1) begin
+            v_b.state = hit;
+          end
+
         end
       fence :
         begin
+
+          v_b.wen = 0;
+          v_b.lock = 0;
+          v_b.valid = 0;
+          v_b.fence = 1;
 
         end
       default :
         begin
 
+        end
+    endcase
+
+    ictrl_out.tag_in.raddr = rin_f.did;
+    ictrl_out.data_in.raddr = rin_f.did;
+    ictrl_out.lock_in.raddr = rin_f.did;
+    // ictrl_out.valid_in.raddr = rin_f.did;
+
+    ictrl_out.tag_in.waddr = v_b.did;
+    ictrl_out.tag_in.wen = v_b.wen;
+    ictrl_out.tag_in.wdata = v_b.tag;
+
+    ictrl_out.data_in.waddr = v_b.did;
+    ictrl_out.data_in.wen = v_b.wen;
+    ictrl_out.data_in.wdata = v_b.data;
+
+    ictrl_out.lock_in.waddr = v_b.did;
+    ictrl_out.lock_in.wen = v_b.wen | v_b.fence;
+    ictrl_out.lock_in.wdata = v_b.lock;
+
+    // ictrl_out.valid_in.waddr = v_b.did;
+    // ictrl_out.valid_in.wen = v_b.wen or v_b.fence;
+    // ictrl_out.valid_in.wdata = v_b.valid;
+
+    if (r_b.state == fence) begin
+      if (v_b.did == 2**itim_depth-1) begin
+        v_b.state = hit;
+      end else begin
+        v_b.did = v_b.did + 1;
+      end
+    end
+
+    case(r_b.state)
+      hit :
+        begin
+          v_b.rdata = v_b.data[32*v_b.wid +: 32];
+          v_b.ready = v_b.en & v_b.hit;
+        end
+      load :
+        begin
+          v_b.rdata = imem_out.mem_rdata;
+          v_b.ready = imem_out.mem_ready;
+        end
+      fence :
+        begin
+          if (v_b.state == hit) begin
+            v_b.rdata = 0;
+            v_b.ready = 1;
+          end else begin
+            v_b.rdata = 0;
+            v_b.ready = 0;
+          end
+        end
+      default :
+        begin
+          v_b.rdata = 0;
+          v_b.ready = 0;
         end
     endcase
 
@@ -364,7 +481,7 @@ module itim
 
   generate
 
-    if (dtim_enable == 1) begin
+    if (itim_enable == 1) begin
 
       itim_ctrl_in_type ictrl_in;
       itim_ctrl_out_type ictrl_out;
