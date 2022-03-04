@@ -278,7 +278,9 @@ module cpu
     .q (execute_out_q)
   );
 
-  itim itim_comp
+  itim#(
+    .itim_enable (itim_enable)
+  ) itim_comp
   (
     .rst (rst),
     .clk (clk),
@@ -288,7 +290,9 @@ module cpu
     .imem_in (imem_in)
   );
 
-  dtim dtim_comp
+  dtim#(
+    .dtim_enable (dtim_enable)
+  ) dtim_comp
   (
     .rst (rst),
     .clk (clk),
