@@ -193,10 +193,12 @@ module itim_ctrl
   timeunit 1ns;
   timeprecision 1ps;
 
-  parameter [1:0] hit = 0;
-  parameter [1:0] miss = 1;
-  parameter [1:0] load = 2;
-  parameter [1:0] fence = 3;
+  parameter [2:0] hit = 0;
+  parameter [2:0] miss = 1;
+  parameter [2:0] load = 2;
+  parameter [2:0] update = 3;
+  parameter [2:0] fence = 4;
+  parameter [2:0] reset = 5;
 
   typedef struct packed{
     logic [29-(itim_depth+itim_width):0] tag;
@@ -233,7 +235,7 @@ module itim_ctrl
     logic [0:0] hit;
     logic [0:0] miss;
     logic [0:0] load;
-    logic [1:0] state;
+    logic [2:0] state;
   } back_type;
 
   parameter back_type init_back = '{
@@ -253,7 +255,7 @@ module itim_ctrl
     hit : 0,
     miss : 0,
     load : 0,
-    state : fence
+    state : 0
   };
 
   front_type r_f,rin_f;
@@ -322,7 +324,7 @@ module itim_ctrl
 
           if (v_b.miss == 1) begin
             v_b.state = miss;
-            v_b.addr[itim_width+2:0] = 0;
+            v_b.addr[itim_width+1:0] = 0;
             v_b.cnt = 0;
             v_b.valid = 1;
           end else if (v_b.load == 1) begin
@@ -346,7 +348,7 @@ module itim_ctrl
               v_b.wen = 1;
               v_b.lock = 1;
               v_b.valid = 0;
-              v_b.state = hit;
+              v_b.state = update;
             end else begin
               v_b.addr = v_b.addr + 4;
               v_b.cnt = v_b.cnt + 1;
@@ -364,6 +366,15 @@ module itim_ctrl
           if (imem_out.mem_ready == 1) begin
             v_b.state = hit;
           end
+
+        end
+      update :
+        begin
+
+          v_b.wen = 0;
+          v_b.lock = 0;
+          v_b.valid = 0;
+          v_b.state = hit;
 
         end
       fence :
@@ -420,6 +431,11 @@ module itim_ctrl
         begin
           v_b.rdata = imem_out.mem_rdata;
           v_b.ready = imem_out.mem_ready;
+        end
+      update :
+        begin
+          v_b.rdata = v_b.data[32*v_b.wid +: 32];
+          v_b.ready = 1;
         end
       fence :
         begin
