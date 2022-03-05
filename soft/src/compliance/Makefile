@@ -11,7 +11,7 @@ include $(src_dir)/rv32z/Makefrag
 
 RISCV_GCC ?= $(RISCV)/riscv64-unknown-elf-gcc
 RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
-RISCV_INCL ?= -I $(src_dir)/env -I $(src_dir)/../common
+RISCV_INCL ?= -I $(src_dir)/env -I $(src_dir)/../common/env
 RISCV_LINK_OPTS ?= -T $(src_dir)/../common/test.ld -D RVMODEL_ASSERT
 RISCV_OBJDUMP ?= $(RISCV)/riscv64-unknown-elf-objdump -Mnumeric,no-aliases --disassemble --disassemble-zeroes
 RISCV_OBJCOPY ?= $(RISCV)/riscv64-unknown-elf-objcopy -O binary
