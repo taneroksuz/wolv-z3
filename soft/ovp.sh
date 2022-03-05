@@ -39,8 +39,6 @@ fi
 
 unzip ${OVP} -d ${BASEDIR}/soft/src/riscv-ovp
 
-cp -r ${BASEDIR}/soft/src/riscv-ovp/imperas-riscv-tests/riscv-test-env/*.h ${BASEDIR}/soft/src/ovp/env/
-cp -r ${BASEDIR}/soft/src/riscv-ovp/imperas-riscv-tests/riscv-test-env/p ${BASEDIR}/soft/src/ovp/env/
 cp -r ${BASEDIR}/soft/src/riscv-ovp/imperas-riscv-tests/riscv-test-suite/env/*.h ${BASEDIR}/soft/src/ovp/env/
 cp -r ${BASEDIR}/soft/src/riscv-ovp/imperas-riscv-tests/riscv-test-suite/rv32i_m/C/src/* ${BASEDIR}/soft/src/ovp/rv32c/
 cp -r ${BASEDIR}/soft/src/riscv-ovp/imperas-riscv-tests/riscv-test-suite/rv32i_m/I/src/* ${BASEDIR}/soft/src/ovp/rv32i/
