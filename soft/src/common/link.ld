@@ -8,7 +8,7 @@ SECTIONS
   .text : { *(.text) }
   .data : { *(.data) }
   .bss : { *(.bss) }
-  . = 0x30000;
+  . = 0x300000;
   .tohost : { *(.tohost) }
   _end = .;
 }

@@ -29,7 +29,7 @@ SECTIONS
     *(.tbss)
     _tbss_end = .;
   }
-  . = 0x30000;
+  . = 0x300000;
   .tohost : { *(.tohost) }
   _end = .;
 }
