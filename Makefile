@@ -22,7 +22,10 @@ FPGA ?= quartus # tb vivado quartus
 WAVE ?= "" # "on" for saving dump file
 
 generate:
-	@if [ ${TEST} = "compliance" ]; \
+	@if [ ${TEST} = "isa" ]; \
+	then \
+		soft/isa.sh ${RISCV} ${MARCH} ${MABI} ${PYTHON} ${OFFSET} ${BASEDIR}; \
+	elif [ ${TEST} = "compliance" ]; \
 	then \
 		soft/compliance.sh ${RISCV} ${MARCH} ${MABI} ${XLEN} ${PYTHON} ${OFFSET} ${BASEDIR}; \
 	elif [ ${TEST} = "ovp" ]; \
