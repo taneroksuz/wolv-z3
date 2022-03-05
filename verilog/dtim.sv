@@ -394,7 +394,7 @@ module dtim_ctrl
           end else if (|(dctrl_in.tag_out.rdata ^ v_b.tag) == 1) begin
             v_b.ldst = v_b.wren | v_b.rden;
           end else begin
-            v_b.hit = v_b.wren | v_b.rden;
+            v_b.hit = v_b.rden;
           end
 
           if (v_b.miss == 1) begin

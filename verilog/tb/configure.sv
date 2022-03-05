@@ -11,7 +11,7 @@ package configure;
   parameter itim_width = 2;
   parameter itim_depth = 10;
 
-  parameter dtim_enable = 0;
+  parameter dtim_enable = 1;
   parameter dtim_width = 2;
   parameter dtim_depth = 10;
 
