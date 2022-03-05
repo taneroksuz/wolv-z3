@@ -237,10 +237,9 @@ module dtim_ctrl
   parameter [2:0] hit = 0;
   parameter [2:0] miss = 1;
   parameter [2:0] ldst = 2;
-  parameter [2:0] replace = 3;
-  parameter [2:0] update = 4;
-  parameter [2:0] fence = 5;
-  parameter [2:0] reset = 6;
+  parameter [2:0] update = 3;
+  parameter [2:0] fence = 4;
+  parameter [2:0] reset = 5;
 
   typedef struct packed{
     logic [29-(dtim_depth+dtim_width):0] tag;
@@ -407,8 +406,10 @@ module dtim_ctrl
             v_b.wstrb = v_b.strb;
             v_b.valid = 1;
           end else begin
-            v_b.state = v_b.wren == 1 ? replace : hit;
+            v_b.state = v_b.wren == 1 ? update : hit;
             v_b.data = dctrl_in.data_out.rdata;
+            v_b.wen = v_b.wren;
+            v_b.lock = v_b.wren;
             v_b.dirty = v_b.wren;
             v_b.valid = 0;
           end
@@ -446,16 +447,6 @@ module dtim_ctrl
             v_b.valid = 0;
             v_b.state = hit;
           end
-
-        end
-      replace :
-        begin
-
-          v_b.wen = 1;
-          v_b.lock = 1;
-          v_b.dirty = 1;
-          v_b.valid = 0;
-          v_b.state = hit;
 
         end
       update :
@@ -538,11 +529,6 @@ module dtim_ctrl
         begin
           v_b.rdata = dmem_out.mem_rdata;
           v_b.ready = dmem_out.mem_ready;
-        end
-      replace :
-        begin
-          v_b.rdata = 0;
-          v_b.ready = 1;
         end
       update :
         begin
