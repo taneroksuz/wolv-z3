@@ -32,6 +32,11 @@ SECTIONS
     *(.text.init)
   } > ram
 
+  .tohost : {
+    . = ALIGN(0x1000);
+    *(.tohost)
+  } > ram
+
   .text : { *(.text) } > ram
 
   /* data segment */
@@ -66,10 +71,5 @@ SECTIONS
     _tbss_end = .;
     /* End of uninitalized data segement */
     _end = .;
-  } > ram
-
-  .tohost : {
-    . = ALIGN(0x1000);
-    *(.tohost)
   } > ram
 }
