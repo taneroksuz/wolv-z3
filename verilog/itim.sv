@@ -361,10 +361,10 @@ module itim_ctrl
 
           v_b.wen = 0;
           v_b.lock = 0;
-          v_b.valid = 0;
 
           if (imem_out.mem_ready == 1) begin
             v_b.state = hit;
+            v_b.valid = 0;
           end
 
         end

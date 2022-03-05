@@ -53,132 +53,149 @@ module soc
 
   logic [63 : 0] mtime;
 
-  logic [0  : 0] bram_i;
-  logic [0  : 0] bram_d;
-  logic [0  : 0] print_i;
-  logic [0  : 0] print_d;
-  logic [0  : 0] clint_i;
-  logic [0  : 0] clint_d;
+  logic [31 : 0] imem_addr;
+  logic [31 : 0] dmem_addr;
 
-  parameter [1  : 0] bram_access = 0;
-  parameter [1  : 0] print_access = 1;
-  parameter [1  : 0] clint_access = 2;
-  parameter [1  : 0] non_access = 3;
+  logic [31 : 0] ibase_addr;
+  logic [31 : 0] dbase_addr;
 
-  logic [1  : 0] instr_access_type;
-  logic [1  : 0] instr_release_type;
+  typedef struct packed{
+    logic [0  : 0] bram_i;
+    logic [0  : 0] bram_d;
+    logic [0  : 0] print_i;
+    logic [0  : 0] print_d;
+    logic [0  : 0] clint_i;
+    logic [0  : 0] clint_d;
+  } reg_type;
 
-  logic [1  : 0] data_access_type;
-  logic [1  : 0] data_release_type;
+  parameter reg_type init_reg = '{
+    bram_i : 0,
+    bram_d : 0,
+    print_i : 0,
+    print_d : 0,
+    clint_i : 0,
+    clint_d : 0
+  };
+
+  reg_type r,rin;
+  reg_type v;
 
   always_comb begin
 
-    if (dmemory_addr >= clint_base_addr &&
-      dmemory_addr < clint_top_addr) begin
-        clint_d = dmemory_valid;
-        print_d = 0;
-        bram_d = 0;
-    end else if (dmemory_addr >= print_base_addr &&
-      dmemory_addr < print_top_addr) begin
-        clint_d = 0;
-        print_d = dmemory_valid;
-        bram_d = 0;
-    end else if (dmemory_addr >= bram_base_addr &&
-      dmemory_addr < bram_top_addr) begin
-        clint_d = 0;
-        print_d = 0;
-        bram_d = dmemory_valid;
-    end else begin
-      clint_d = 0;
-      print_d = 0;
-      bram_d = 0;
+    v = r;
+
+    dbase_addr = 0;
+
+    if (bram_ready == 1) begin
+      v.bram_i = 0;
+      v.bram_d = 0;
+    end
+    if (print_ready == 1) begin
+      v.print_i = 0;
+      v.print_d = 0;
+    end
+    if (clint_ready == 1) begin
+      v.clint_i = 0;
+      v.clint_d = 0;
     end
 
-    if (imemory_addr >= clint_base_addr &&
-      imemory_addr < clint_top_addr) begin
-        clint_i = imemory_valid;
-        print_i = 0;
-        bram_i = 0;
-    end else if (imemory_addr >= print_base_addr &&
-      imemory_addr < print_top_addr) begin
-        clint_i = 0;
-        print_i = imemory_valid;
-        bram_i = 0;
-    end else if (imemory_addr >= bram_base_addr &&
-      imemory_addr < bram_top_addr) begin
-        clint_i = 0;
-        print_i = 0;
-        bram_i = imemory_valid;
-    end else begin
-      clint_i = 0;
-      print_i = 0;
-      bram_i = 0;
-    end
-
-    if (clint_d==1 & clint_i==1) begin
-      clint_valid = 1;
-      print_valid = 0;
-      bram_valid = 0;
-      instr_access_type = non_access;
-      data_access_type = clint_access;
-    end else if (print_d==1 & print_i==1) begin
-      clint_valid = 0;
-      print_valid = 1;
-      bram_valid = 0;
-      instr_access_type = non_access;
-      data_access_type = print_access;
-    end else if (bram_d==1 & bram_i==1) begin
-      clint_valid = 0;
-      print_valid = 0;
-      bram_valid = 1;
-      instr_access_type = non_access;
-      data_access_type = bram_access;
-    end else begin
-      clint_valid = clint_d | clint_i;
-      print_valid = print_d | print_i;
-      bram_valid = bram_d | bram_i;
-      if (clint_i == 1) begin
-        instr_access_type = clint_access;
-      end else if (print_i == 1) begin
-        instr_access_type = print_access;
-      end else if (bram_i == 1) begin
-        instr_access_type = bram_access;
+    if (dmemory_valid == 1) begin
+      if (dmemory_addr >= clint_base_addr &&
+        dmemory_addr < clint_top_addr) begin
+          v.clint_d = dmemory_valid;
+          v.print_d = 0;
+          v.bram_d = 0;
+          dbase_addr = clint_base_addr;
+      end else if (dmemory_addr >= print_base_addr &&
+        dmemory_addr < print_top_addr) begin
+          v.clint_d = 0;
+          v.print_d = dmemory_valid;
+          v.bram_d = 0;
+          dbase_addr = print_base_addr;
+      end else if (dmemory_addr >= bram_base_addr &&
+        dmemory_addr < bram_top_addr) begin
+          v.clint_d = 0;
+          v.print_d = 0;
+          v.bram_d = dmemory_valid;
+          dbase_addr = bram_base_addr;
       end else begin
-        instr_access_type = non_access;
-      end
-      if (clint_d == 1) begin
-        data_access_type = clint_access;
-      end else if (print_d == 1) begin
-        data_access_type = print_access;
-      end else if (bram_d == 1) begin
-        data_access_type = bram_access;
-      end else begin
-        data_access_type = non_access;
+        v.clint_d = 0;
+        v.print_d = 0;
+        v.bram_d = 0;
+        dbase_addr = 0;
       end
     end
 
-    bram_instr = bram_d ? dmemory_instr : imemory_instr;
-    bram_addr = bram_d ? dmemory_addr ^ bram_base_addr : imemory_addr ^ bram_base_addr;
-    bram_wdata = bram_d ? dmemory_wdata : imemory_wdata;
-    bram_wstrb = bram_d ? dmemory_wstrb : imemory_wstrb;
+    dmem_addr = dmemory_addr - dbase_addr;
 
-    print_instr = print_d ? dmemory_instr : imemory_instr;
-    print_addr = print_d ? dmemory_addr ^ print_base_addr : imemory_addr ^ print_base_addr;
-    print_wdata = print_d ? dmemory_wdata : imemory_wdata;
-    print_wstrb = print_d ? dmemory_wstrb : imemory_wstrb;
+    ibase_addr = 0;
 
-    clint_instr = clint_d ? dmemory_instr : imemory_instr;
-    clint_addr = clint_d ? dmemory_addr ^ clint_base_addr : imemory_addr ^ clint_base_addr;
-    clint_wdata = clint_d ? dmemory_wdata : imemory_wdata;
-    clint_wstrb = clint_d ? dmemory_wstrb : imemory_wstrb;
+    if (imemory_valid == 1) begin
+      if (imemory_addr >= clint_base_addr &&
+        imemory_addr < clint_top_addr) begin
+          v.clint_i = imemory_valid;
+          v.print_i = 0;
+          v.bram_i = 0;
+          ibase_addr = clint_base_addr;
+      end else if (imemory_addr >= print_base_addr &&
+        imemory_addr < print_top_addr) begin
+          v.clint_i = 0;
+          v.print_i = imemory_valid;
+          v.bram_i = 0;
+          ibase_addr = print_base_addr;
+      end else if (imemory_addr >= bram_base_addr &&
+        imemory_addr < bram_top_addr) begin
+          v.clint_i = 0;
+          v.print_i = 0;
+          v.bram_i = imemory_valid;
+          ibase_addr = bram_base_addr;
+      end else begin
+        v.clint_i = 0;
+        v.print_i = 0;
+        v.bram_i = 0;
+        ibase_addr = 0;
+      end
+    end
 
-    if (instr_release_type == bram_access) begin
+    if (v.bram_i == 1 && v.bram_d == 1) begin
+      v.bram_i = 0;
+    end
+    if (v.print_i == 1 && v.print_d == 1) begin
+      v.print_i = 0;
+    end
+    if (v.clint_i == 1 && v.clint_d == 1) begin
+      v.clint_i = 0;
+    end
+
+    imem_addr = imemory_addr - ibase_addr;
+
+    bram_valid = v.bram_d ? dmemory_valid : imemory_valid;
+    bram_instr = v.bram_d ? dmemory_instr : imemory_instr;
+    bram_addr = v.bram_d ? dmem_addr : imem_addr;
+    bram_wdata = v.bram_d ? dmemory_wdata : imemory_wdata;
+    bram_wstrb = v.bram_d ? dmemory_wstrb : imemory_wstrb;
+
+    print_valid = v.print_d ? dmemory_valid : imemory_valid;
+    print_instr = v.print_d ? dmemory_instr : imemory_instr;
+    print_addr = v.print_d ? dmem_addr : imem_addr;
+    print_wdata = v.print_d ? dmemory_wdata : imemory_wdata;
+    print_wstrb = v.print_d ? dmemory_wstrb : imemory_wstrb;
+
+    clint_valid = v.clint_d ? dmemory_valid : imemory_valid;
+    clint_instr = v.clint_d ? dmemory_instr : imemory_instr;
+    clint_addr = v.clint_d ? dmem_addr : imem_addr;
+    clint_wdata = v.clint_d ? dmemory_wdata : imemory_wdata;
+    clint_wstrb = v.clint_d ? dmemory_wstrb : imemory_wstrb;
+
+    rin = v;
+
+    if (r.bram_i == 1 && bram_ready == 1) begin
       imemory_rdata = bram_rdata;
       imemory_ready = bram_ready;
-    end else if  (instr_release_type == print_access) begin
+    end else if (r.print_i == 1 && print_ready == 1) begin
       imemory_rdata = print_rdata;
       imemory_ready = print_ready;
-    end else if  (instr_release_type == clint_access) begin
+    end else if (r.clint_i == 1 && clint_ready == 1) begin
       imemory_rdata = clint_rdata;
       imemory_ready = clint_ready;
     end else begin
@@ -186,13 +203,13 @@ module soc
       imemory_ready = 0;
     end
 
-    if (data_release_type == bram_access) begin
+    if (r.bram_d == 1 && bram_ready == 1) begin
       dmemory_rdata = bram_rdata;
       dmemory_ready = bram_ready;
-    end else if  (data_release_type == print_access) begin
+    end else if (r.print_d == 1 && print_ready == 1) begin
       dmemory_rdata = print_rdata;
       dmemory_ready = print_ready;
-    end else if  (data_release_type == clint_access) begin
+    end else if (r.clint_d == 1 && clint_ready == 1) begin
       dmemory_rdata = clint_rdata;
       dmemory_ready = clint_ready;
     end else begin
@@ -204,15 +221,9 @@ module soc
 
   always_ff @(posedge clk) begin
     if (rst == 0) begin
-      instr_release_type <= non_access;
-      data_release_type <= non_access;
+      r <= init_reg;
     end else begin
-      if (imemory_valid == 1 && (clint_ready | bram_ready | print_ready) == 1) begin
-        instr_release_type <= instr_access_type;
-      end
-      if (dmemory_valid == 1 && (clint_ready | bram_ready | print_ready) == 1) begin
-        data_release_type <= data_access_type;
-      end
+      r <= rin;
     end
   end
 
