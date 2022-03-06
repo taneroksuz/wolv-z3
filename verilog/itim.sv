@@ -1,8 +1,8 @@
 package itim_wires;
-  import configure::*;
-
   timeunit 1ns;
   timeprecision 1ps;
+
+  import configure::*;
 
   typedef struct packed{
     logic [0 : 0] wen;
