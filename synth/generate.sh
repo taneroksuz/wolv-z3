@@ -15,11 +15,6 @@ cd ${DIR}/synth/verilog
 
 if [ -f "${DIR}/build/${TEST}/dat/${TEST}.dat" ]; then
 		cp ${DIR}/build/${TEST}/dat/${TEST}.dat bram.dat
-		split -n 2 bram.dat
-		mv xaa iram.dat
-		mv xab dram.dat
-		sed -i 1d dram.dat
-		rm bram.dat
 fi
 
 ${SV2V} ${DIR}/fpga/${FPGA}/configure.sv \
