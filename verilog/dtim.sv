@@ -598,6 +598,13 @@ module dtim
         .dtim_valid_out (dctrl_in.valid_out)
       );
 
+      dtim_dirty dtim_dirty_comp
+      (
+        .clk (clk),
+        .dtim_dirty_in (dctrl_out.dirty_in),
+        .dtim_dirty_out (dctrl_in.dirty_out)
+      );
+
       dtim_lock dtim_lock_comp
       (
         .clk (clk),
