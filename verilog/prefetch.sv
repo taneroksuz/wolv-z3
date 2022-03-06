@@ -12,7 +12,7 @@ module prefetch
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [31 : 0] prefetch_buffer[0:2**prefetch_depth-1];
+  logic [31 : 0] prefetch_buffer[0:2**prefetch_depth-1] = '{default:'0};
 
   typedef struct packed{
     logic [31:0] pc;

@@ -11,7 +11,7 @@ module register
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [31:0] reg_file[0:31];
+  logic [31:0] reg_file[0:31] = '{default:'0};
 
   always_comb begin
     if (register_rin.rden1 == 1) begin

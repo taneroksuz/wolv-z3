@@ -90,6 +90,21 @@ module soc
   reg_type r,rin;
   reg_type v;
 
+  always_ff @(posedge clk) begin
+    if (count == clk_divider_rtc) begin
+      rtc <= ~rtc;
+      count <= 0;
+    end else begin
+      count <= count + 1;
+    end
+    if (count_pll == clk_divider_pll) begin
+      clk_pll <= ~clk_pll;
+      count_pll <= 0;
+    end else begin
+      count_pll <= count_pll + 1;
+    end
+  end
+
   always_comb begin
 
     v = r;
@@ -229,7 +244,7 @@ module soc
 
   end
 
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk_pll) begin
     if (rst == 0) begin
       r <= init_reg;
     end else begin

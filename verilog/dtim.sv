@@ -89,13 +89,8 @@ module dtim_tag
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [29-(dtim_depth+dtim_width):0] tag_array[0:2**dtim_depth-1];
-  logic [29-(dtim_depth+dtim_width):0] tag_rdata;
-
-  initial begin
-    tag_array = '{default:'0};
-    tag_rdata = 0;
-  end
+  logic [29-(dtim_depth+dtim_width):0] tag_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [29-(dtim_depth+dtim_width):0] tag_rdata = 0;
 
   assign dtim_tag_out.rdata = tag_rdata;
 
@@ -117,13 +112,8 @@ module dtim_data
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [2**dtim_width*32-1 : 0] data_array[0:2**dtim_depth-1];
-  logic [2**dtim_width*32-1 : 0] data_rdata;
-
-  initial begin
-    data_array = '{default:'0};
-    data_rdata = 0;
-  end
+  logic [2**dtim_width*32-1 : 0] data_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [2**dtim_width*32-1 : 0] data_rdata = 0;
 
   assign dtim_data_out.rdata = data_rdata;
 
@@ -145,13 +135,8 @@ module dtim_valid
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [0 : 0] valid_array[0:2**dtim_depth-1];
-  logic [0 : 0] valid_rdata;
-
-  initial begin
-    valid_array = '{default:'0};
-    valid_rdata = 0;
-  end
+  logic [0 : 0] valid_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [0 : 0] valid_rdata = 0;
 
   assign dtim_valid_out.rdata = valid_rdata;
 
@@ -173,13 +158,8 @@ module dtim_lock
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [0 : 0] lock_array[0:2**dtim_depth-1];
-  logic [0 : 0] lock_rdata;
-
-  initial begin
-    lock_array = '{default:'0};
-    lock_rdata = 0;
-  end
+  logic [0 : 0] lock_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [0 : 0] lock_rdata = 0;
 
   assign dtim_lock_out.rdata = lock_rdata;
 
@@ -201,13 +181,8 @@ module dtim_dirty
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [0 : 0] dirty_array[0:2**dtim_depth-1];
-  logic [0 : 0] dirty_rdata;
-
-  initial begin
-    dirty_array = '{default:'0};
-    dirty_rdata = 0;
-  end
+  logic [0 : 0] dirty_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [0 : 0] dirty_rdata = 0;
 
   assign dtim_dirty_out.rdata = dirty_rdata;
 
@@ -321,11 +296,11 @@ module dtim_ctrl
 
   integer i;
 
-  front_type r_f,rin_f;
-  front_type v_f;
+  front_type r_f,rin_f = init_front;
+  front_type v_f = init_front;
 
-  back_type r_b,rin_b;
-  back_type v_b;
+  back_type r_b,rin_b = init_back;
+  back_type v_b = init_back;
 
   always_comb begin
 

@@ -11,7 +11,7 @@ module register
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [31:0] reg_file[0:31];
+  logic [31:0] reg_file[0:31] = '{default:'0};
 
   always_comb begin
     if (register_rin.rden1 == 1) begin
@@ -24,10 +24,6 @@ module register
     end else begin
       register_out.rdata2 = 32'h0;
     end
-  end
-
-  initial begin
-    reg_file = '{default:'0};
   end
 
   always_ff @(posedge clk) begin

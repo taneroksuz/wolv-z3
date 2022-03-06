@@ -33,6 +33,6 @@ rvtest_entry_point:
   li  x30,0
   li  x31,0
 
-  lui sp,(0x24000)>>12
+  lui sp,(0x1000)>>12
 
 	jal ra,main
