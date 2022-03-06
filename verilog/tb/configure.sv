@@ -23,9 +23,9 @@ package configure;
   parameter bram_top_addr  = 32'h100000;
 
   parameter itim_base_addr = 32'h000000;
-  parameter itim_top_addr  = 32'h080000;
+  parameter itim_top_addr  = 32'h100000;
 
-  parameter dtim_base_addr = 32'h080000;
+  parameter dtim_base_addr = 32'h000000;
   parameter dtim_top_addr  = 32'h100000;
 
   parameter print_base_addr = 32'h1000000;

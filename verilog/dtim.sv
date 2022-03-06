@@ -388,7 +388,9 @@ module dtim_ctrl
           v_b.lock = dctrl_in.lock_out.rdata;
           v_b.dirty = dctrl_in.dirty_out.rdata;
 
-          if (v_b.lock == 0) begin
+          if (v_b.addr >= dtim_base_addr && v_b.addr < dtim_top_addr) begin
+            v_b.ldst = v_b.wren | v_b.rden;
+          end if (v_b.lock == 0) begin
             v_b.miss = v_b.wren | v_b.rden;
           end else if (|(dctrl_in.tag_out.rdata ^ v_b.tag) == 1) begin
             v_b.ldst = v_b.wren | v_b.rden;

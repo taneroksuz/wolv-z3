@@ -314,7 +314,9 @@ module itim_ctrl
           v_b.wen = 0;
           v_b.lock = ictrl_in.lock_out.rdata;
 
-          if (v_b.lock == 0) begin
+          if (v_b.addr >= itim_base_addr && v_b.addr < itim_top_addr) begin
+            v_b.load = v_b.en;
+          end else if (v_b.lock == 0) begin
             v_b.miss = v_b.en;
           end else if (|(ictrl_in.tag_out.rdata ^ v_b.tag) == 1) begin
             v_b.load = v_b.en;

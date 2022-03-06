@@ -268,11 +268,11 @@ module soc
   (
     .rst (rst),
     .clk (clk),
-    .check_valid (bram_valid),
-    .check_instr (bram_instr),
-    .check_addr (bram_addr),
-    .check_wdata (bram_wdata),
-    .check_wstrb (bram_wstrb)
+    .check_valid (dmemory_valid),
+    .check_instr (dmemory_instr),
+    .check_addr (dmemory_addr),
+    .check_wdata (dmemory_wdata),
+    .check_wstrb (dmemory_wstrb)
   );
 
   print print_comp
