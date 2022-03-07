@@ -71,6 +71,8 @@ module cpu
   execute_out_type execute_out_q;
   prefetch_in_type prefetch_in;
   prefetch_out_type prefetch_out;
+  mem_in_type writebuffer_in;
+  mem_out_type writebuffer_out;
   mem_in_type itim_in;
   mem_out_type itim_out;
   mem_in_type dtim_in;
@@ -209,6 +211,16 @@ module cpu
     .prefetch_out (prefetch_out)
   );
 
+  writebuffer writebuffer_comp
+  (
+    .rst (rst),
+    .clk (clk),
+    .writebuffer_in (writebuffer_in),
+    .writebuffer_out (writebuffer_out),
+    .dmem_in (dtim_in),
+    .dmem_out (dtim_out)
+  );
+
   fetch_stage fetch_stage_comp
   (
     .rst (rst),
@@ -242,7 +254,7 @@ module cpu
     .forwarding_rin (forwarding_rin),
     .csr_out (csr_out),
     .csr_din (csr_din),
-    .dmem_in (dtim_in),
+    .writebuffer_in (writebuffer_in),
     .a (decode_in_a),
     .d (decode_in_d),
     .y (decode_out_y),
@@ -271,7 +283,7 @@ module cpu
     .forwarding_ein (forwarding_ein),
     .csr_out (csr_out),
     .csr_ein (csr_ein),
-    .dmem_out (dtim_out),
+    .writebuffer_out (writebuffer_out),
     .a (execute_in_a),
     .d (execute_in_d),
     .y (execute_out_y),
