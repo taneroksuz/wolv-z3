@@ -90,13 +90,15 @@ module dtim_tag
   timeprecision 1ps;
 
   logic [29-(dtim_depth+dtim_width):0] tag_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [29-(dtim_depth+dtim_width):0] tag_rdata = 0;
 
-  assign dtim_tag_out.rdata = tag_array[dtim_tag_in.raddr];
+  assign dtim_tag_out.rdata = tag_rdata;
 
   always_ff @(posedge clk) begin
     if (dtim_tag_in.wen == 1) begin
       tag_array[dtim_tag_in.waddr] <= dtim_tag_in.wdata;
     end
+    tag_rdata <= tag_array[dtim_tag_in.raddr];
   end
 
 endmodule
@@ -111,13 +113,15 @@ module dtim_data
   timeprecision 1ps;
 
   logic [2**dtim_width*32-1 : 0] data_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [2**dtim_width*32-1 : 0] data_rdata = 0;
 
-  assign dtim_data_out.rdata = data_array[dtim_data_in.raddr];
+  assign dtim_data_out.rdata = data_rdata;
 
   always_ff @(posedge clk) begin
     if (dtim_data_in.wen == 1) begin
       data_array[dtim_data_in.waddr] <= dtim_data_in.wdata;
     end
+    data_rdata <= data_array[dtim_data_in.raddr];
   end
 
 endmodule
@@ -132,13 +136,15 @@ module dtim_valid
   timeprecision 1ps;
 
   logic [0 : 0] valid_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [0 : 0] valid_rdata = 0;
 
-  assign dtim_valid_out.rdata = valid_array[dtim_valid_in.raddr];
+  assign dtim_valid_out.rdata = valid_rdata;
 
   always_ff @(posedge clk) begin
     if (dtim_valid_in.wen == 1) begin
       valid_array[dtim_valid_in.waddr] <= dtim_valid_in.wdata;
     end
+    valid_rdata <= valid_array[dtim_valid_in.raddr];
   end
 
 endmodule
@@ -153,13 +159,15 @@ module dtim_lock
   timeprecision 1ps;
 
   logic [0 : 0] lock_array[0:2**dtim_depth-1] = '{default:'0};
+  logic [0 : 0] lock_rdata = 0;
 
-  assign dtim_lock_out.rdata = lock_array[dtim_lock_in.raddr];
+  assign dtim_lock_out.rdata = lock_rdata;
 
   always_ff @(posedge clk) begin
     if (dtim_lock_in.wen == 1) begin
       lock_array[dtim_lock_in.waddr] <= dtim_lock_in.wdata;
     end
+    lock_rdata <= lock_array[dtim_lock_in.raddr];
   end
 
 endmodule
@@ -204,8 +212,33 @@ module dtim_ctrl
   parameter [2:0] hit = 0;
   parameter [2:0] miss = 1;
   parameter [2:0] ldst = 2;
-  parameter [2:0] inv = 3;
-  parameter [2:0] reset = 4;
+  parameter [2:0] update = 3;
+  parameter [2:0] fence = 4;
+  parameter [2:0] reset = 5;
+
+  typedef struct packed{
+    logic [29-(dtim_depth+dtim_width):0] tag;
+    logic [dtim_width-1:0] wid;
+    logic [dtim_depth-1:0] did;
+    logic [31:0] addr;
+    logic [31:0] data;
+    logic [3:0] strb;
+    logic [0:0] wren;
+    logic [0:0] rden;
+    logic [0:0] fence;
+  } front_type;
+
+  parameter front_type init_front = '{
+    tag : 0,
+    wid : 0,
+    did : 0,
+    addr : 0,
+    data : 0,
+    strb : 0,
+    wren : 0,
+    rden : 0,
+    fence : 0
+  };
 
   typedef struct packed{
     logic [29-(dtim_depth+dtim_width):0] tag;
@@ -226,8 +259,6 @@ module dtim_ctrl
     logic [0:0] dirty;
     logic [0:0] wren;
     logic [0:0] rden;
-    logic [0:0] upd;
-    logic [0:0] inv;
     logic [0:0] store;
     logic [0:0] wen;
     logic [0:0] hit;
@@ -236,7 +267,7 @@ module dtim_ctrl
     logic [2:0] state;
   } back_type;
 
-  parameter back_type init_reg = '{
+  parameter back_type init_back = '{
     tag : 0,
     data : 0,
     did : 0,
@@ -255,8 +286,6 @@ module dtim_ctrl
     dirty : 0,
     wren : 0,
     rden : 0,
-    upd: 0,
-    inv : 0,
     store : 0,
     wen : 0,
     hit : 0,
@@ -267,109 +296,119 @@ module dtim_ctrl
 
   integer i;
 
-  back_type r,rin = init_reg;
-  back_type v = init_reg;
+  front_type r_f,rin_f = init_front;
+  front_type v_f = init_front;
+
+  back_type r_b,rin_b = init_back;
+  back_type v_b = init_back;
 
   always_comb begin
 
-    v = r;
+    v_f = r_f;
 
-    v.fence = 0;
-    v.rden = 0;
-    v.wren = 0;
-    v.upd = 0;
-    v.inv = 0;
-    v.hit = 0;
-    v.miss = 0;
-    v.ldst = 0;
-    v.wstrb = 0;
+    v_f.fence = 0;
+    v_f.wren = 0;
+    v_f.rden = 0;
 
-    if (r.state == hit) begin
-      if (dtim_in.mem_valid == 1) begin
-        if (dtim_in.mem_fence == 1) begin
-          v.fence = dtim_in.mem_fence;
-          v.wren = dtim_in.mem_valid;
-          v.did = 0;
-        end else begin
-          v.wren = |dtim_in.mem_wstrb;
-          v.rden = ~(|dtim_in.mem_wstrb);
-          v.wdata = dtim_in.mem_wdata;
-          v.strb = dtim_in.mem_wstrb;
-          v.addr = dtim_in.mem_addr;
-          v.tag = dtim_in.mem_addr[31:(dtim_depth+dtim_width+2)];
-          v.did = dtim_in.mem_addr[(dtim_depth+dtim_width+1):(dtim_width+2)];
-          v.wid = dtim_in.mem_addr[(dtim_width+1):2];
-          v.store = v.wren;
-        end
+    if (dtim_in.mem_valid == 1) begin
+      if (dtim_in.mem_fence == 1) begin
+        v_f.fence = dtim_in.mem_fence;
+        v_f.did = 0;
+      end else begin
+        v_f.wren = |dtim_in.mem_wstrb;
+        v_f.rden = ~(|dtim_in.mem_wstrb);
+        v_f.data = dtim_in.mem_wdata;
+        v_f.strb = dtim_in.mem_wstrb;
+        v_f.addr = dtim_in.mem_addr;
+        v_f.tag = dtim_in.mem_addr[31:(dtim_depth+dtim_width+2)];
+        v_f.did = dtim_in.mem_addr[(dtim_depth+dtim_width+1):(dtim_width+2)];
+        v_f.wid = dtim_in.mem_addr[(dtim_width+1):2];
       end
     end
 
-    dctrl_out.tag_in.raddr = v.did;
-    dctrl_out.data_in.raddr = v.did;
-    dctrl_out.lock_in.raddr = v.did;
-    dctrl_out.dirty_in.raddr = v.did;
-    // dctrl_out.valid_in.raddr = v.did;
+    rin_f = v_f;
 
-    case(r.state)
+  end
+
+  always_comb begin
+
+    v_b = r_b;
+
+    v_b.fence = 0;
+    v_b.rden = 0;
+    v_b.wren = 0;
+    v_b.hit = 0;
+    v_b.miss = 0;
+    v_b.ldst = 0;
+    v_b.wstrb = 0;
+
+    if (r_b.state == hit) begin
+      v_b.wren = r_f.wren;
+      v_b.rden = r_f.rden;
+      v_b.store = r_f.wren;
+      v_b.fence = r_f.fence;
+      v_b.wdata = r_f.data;
+      v_b.addr = r_f.addr;
+      v_b.strb = r_f.strb;
+      v_b.tag = r_f.tag;
+      v_b.did = r_f.did;
+      v_b.wid = r_f.wid;
+    end
+
+    case(r_b.state)
       hit :
         begin
 
-          v.wen = 0;
-          v.lock = dctrl_in.lock_out.rdata;
-          v.dirty = dctrl_in.dirty_out.rdata;
+          v_b.wen = 0;
+          v_b.lock = dctrl_in.lock_out.rdata;
+          v_b.dirty = dctrl_in.dirty_out.rdata;
 
-          if (v.fence == 1) begin
-            v.inv = v.wren;
-          end else if (v.addr < dtim_base_addr || v.addr >= dtim_top_addr) begin
-            v.ldst = v.wren | v.rden;
-          end else if (v.lock == 0) begin
-            v.miss = v.wren | v.rden;
-          end else if (|(dctrl_in.tag_out.rdata ^ v.tag) == 1) begin
-            v.ldst = v.wren | v.rden;
+          if (v_b.addr < dtim_base_addr || v_b.addr >= dtim_top_addr) begin
+            v_b.ldst = v_b.wren | v_b.rden;
+          end else if (v_b.lock == 0) begin
+            v_b.miss = v_b.wren | v_b.rden;
+          end else if (|(dctrl_in.tag_out.rdata ^ v_b.tag) == 1) begin
+            v_b.ldst = v_b.wren | v_b.rden;
           end else begin
-            v.hit = v.wren | v.rden;
+            v_b.hit = v_b.rden;
           end
 
-          if (v.inv == 1) begin
-            v.state = inv;
-            v.valid = 0;
-          end else if (v.miss == 1) begin
-            v.state = miss;
-            v.addr[dtim_width+1:0] = 0;
-            v.cnt = 0;
-            v.valid = 1;
-          end else if (v.ldst == 1) begin
-            v.state = ldst;
-            v.wstrb = v.strb;
-            v.valid = 1;
+          if (v_b.miss == 1) begin
+            v_b.state = miss;
+            v_b.addr[dtim_width+1:0] = 0;
+            v_b.cnt = 0;
+            v_b.valid = 1;
+          end else if (v_b.ldst == 1) begin
+            v_b.state = ldst;
+            v_b.wstrb = v_b.strb;
+            v_b.valid = 1;
           end else begin
-            v.state = hit;
-            v.data = dctrl_in.data_out.rdata;
-            v.wen = v.wren;
-            v.lock = v.wren;
-            v.dirty = v.wren;
-            v.valid = 0;
+            v_b.state = v_b.wren == 1 ? update : hit;
+            v_b.data = dctrl_in.data_out.rdata;
+            v_b.wen = v_b.wren;
+            v_b.lock = v_b.wren;
+            v_b.dirty = v_b.wren;
+            v_b.valid = 0;
           end
 
         end
       miss :
         begin
 
-          v.wen = 0;
-          v.lock = 0;
-          v.dirty = 0;
+          v_b.wen = 0;
+          v_b.lock = 0;
+          v_b.dirty = 0;
 
           if (dmem_out.mem_ready == 1) begin
-            v.data[32*v.cnt +: 32] = dmem_out.mem_rdata;
-            if (v.cnt == 2*itim_width-1) begin
-              v.upd = 1;
-              v.wen = 1;
-              v.lock = 1;
-              v.valid = 0;
-              v.state = hit;
+            v_b.data[32*v_b.cnt +: 32] = dmem_out.mem_rdata;
+            if (v_b.cnt == 2*itim_width-1) begin
+              v_b.wen = 1;
+              v_b.lock = 1;
+              v_b.valid = 0;
+              v_b.state = update;
             end else begin
-              v.addr = v.addr + 4;
-              v.cnt = v.cnt + 1;
+              v_b.addr = v_b.addr + 4;
+              v_b.cnt = v_b.cnt + 1;
             end
           end
 
@@ -377,24 +416,34 @@ module dtim_ctrl
       ldst :
         begin
 
-          v.wen = 0;
-          v.lock = 0;
-          v.dirty = 0;
+          v_b.wen = 0;
+          v_b.lock = 0;
+          v_b.dirty = 0;
 
           if (dmem_out.mem_ready == 1) begin
-            v.valid = 0;
-            v.state = hit;
+            v_b.valid = 0;
+            v_b.state = hit;
           end
 
         end
-      inv :
+      update :
         begin
 
-          v.wen = 1;
-          v.lock = 0;
-          v.dirty = 0;
-          v.valid = 0;
-          v.inv = 1;
+          v_b.wen = 0;
+          v_b.lock = 0;
+          v_b.dirty = 0;
+          v_b.valid = 0;
+          v_b.state = hit;
+
+        end
+      fence :
+        begin
+
+          v_b.wen = 0;
+          v_b.lock = 0;
+          v_b.dirty = 0;
+          v_b.valid = 0;
+          v_b.fence = 1;
 
         end
       default :
@@ -403,96 +452,104 @@ module dtim_ctrl
         end
     endcase
 
-    if (v.store == 1) begin
-      v.sdata = v.data[32*v.wid +: 32];
+    if (v_b.store == 1) begin
+      v_b.sdata = v_b.data[32*v_b.wid +: 32];
       for (i=0; i<4; i=i+1) begin
-        if (v.strb[i] == 1) begin
-          v.sdata[8*i +: 8] = v.wdata[8*i +: 8];
+        if (v_b.strb[i] == 1) begin
+          v_b.sdata[8*i +: 8] = v_b.wdata[8*i +: 8];
         end
       end
-      v.data[32*v.wid +: 32] = v.sdata;
+      v_b.data[32*v_b.wid +: 32] = v_b.sdata;
     end
 
-    dctrl_out.tag_in.waddr = v.did;
-    dctrl_out.tag_in.wen = v.wen;
-    dctrl_out.tag_in.wdata = v.tag;
+    dctrl_out.tag_in.raddr = rin_f.did;
+    dctrl_out.data_in.raddr = rin_f.did;
+    dctrl_out.lock_in.raddr = rin_f.did;
+    dctrl_out.dirty_in.raddr = rin_f.did;
+    // dctrl_out.valid_in.raddr = rin_f.did;
 
-    dctrl_out.data_in.waddr = v.did;
-    dctrl_out.data_in.wen = v.wen;
-    dctrl_out.data_in.wdata = v.data;
+    dctrl_out.tag_in.waddr = v_b.did;
+    dctrl_out.tag_in.wen = v_b.wen;
+    dctrl_out.tag_in.wdata = v_b.tag;
 
-    dctrl_out.lock_in.waddr = v.did;
-    dctrl_out.lock_in.wen = v.wen | v.inv;
-    dctrl_out.lock_in.wdata = v.lock;
+    dctrl_out.data_in.waddr = v_b.did;
+    dctrl_out.data_in.wen = v_b.wen;
+    dctrl_out.data_in.wdata = v_b.data;
 
-    dctrl_out.dirty_in.waddr = v.did;
-    dctrl_out.dirty_in.wen = v.wen;
-    dctrl_out.dirty_in.wdata = v.dirty;
+    dctrl_out.lock_in.waddr = v_b.did;
+    dctrl_out.lock_in.wen = v_b.wen | v_b.fence;
+    dctrl_out.lock_in.wdata = v_b.lock;
 
-    // dctrl_out.valid_in.waddr = v.did;
-    // dctrl_out.valid_in.wen = v.wen or v.inv;
-    // dctrl_out.valid_in.wdata = v.valid;
+    dctrl_out.dirty_in.waddr = v_b.did;
+    dctrl_out.dirty_in.wen = v_b.wen;
+    dctrl_out.dirty_in.wdata = v_b.dirty;
 
-    if (v.state == inv) begin
-      if (v.did == 2**dtim_depth-1) begin
-        v.state = hit;
+    // dctrl_out.valid_in.waddr = v_b.did;
+    // dctrl_out.valid_in.wen = v_b.wen or v_b.fence;
+    // dctrl_out.valid_in.wdata = v_b.valid;
+
+    if (r_b.state == fence) begin
+      if (v_b.did == 2**dtim_depth-1) begin
+        v_b.state = hit;
       end else begin
-        v.did = v.did + 1;
+        v_b.did = v_b.did + 1;
       end
     end
 
-    case(r.state)
+    case(r_b.state)
       hit :
         begin
-          v.rdata = v.data[32*v.wid +: 32];
-          v.ready = (v.wren | v.rden) & v.hit;
-        end
-      miss :
-        begin
-          v.rdata = v.data[32*v.wid +: 32];
-          v.ready = v.upd;
+          v_b.rdata = v_b.data[32*v_b.wid +: 32];
+          v_b.ready = (v_b.wren | v_b.rden) & v_b.hit;
         end
       ldst :
         begin
-          v.rdata = dmem_out.mem_rdata;
-          v.ready = dmem_out.mem_ready;
+          v_b.rdata = dmem_out.mem_rdata;
+          v_b.ready = dmem_out.mem_ready;
         end
-      inv :
+      update :
         begin
-          if (v.state == hit) begin
-            v.rdata = 0;
-            v.ready = 1;
+          v_b.rdata = v_b.data[32*v_b.wid +: 32];
+          v_b.ready = 1;
+        end
+      fence :
+        begin
+          if (v_b.state == hit) begin
+            v_b.rdata = 0;
+            v_b.ready = 1;
           end else begin
-            v.rdata = 0;
-            v.ready = 0;
+            v_b.rdata = 0;
+            v_b.ready = 0;
           end
         end
       default :
         begin
-          v.rdata = 0;
-          v.ready = 0;
+          v_b.rdata = 0;
+          v_b.ready = 0;
         end
     endcase
 
-    dmem_in.mem_valid = v.valid;
+    dmem_in.mem_valid = v_b.valid;
     dmem_in.mem_fence = 0;
     dmem_in.mem_instr = 1;
-    dmem_in.mem_addr = v.addr;
-    dmem_in.mem_wdata = v.wdata;
-    dmem_in.mem_wstrb = v.wstrb;
+    dmem_in.mem_addr = v_b.addr;
+    dmem_in.mem_wdata = v_b.wdata;
+    dmem_in.mem_wstrb = v_b.wstrb;
 
-    rin = v;
+    dtim_out.mem_rdata = v_b.rdata;
+    dtim_out.mem_ready = v_b.ready;
 
-    dtim_out.mem_rdata = r.rdata;
-    dtim_out.mem_ready = r.ready;
+    rin_b = v_b;
 
   end
 
   always_ff @(posedge clk) begin
     if (rst == 0) begin
-      r <= init_reg;
+      r_f <= init_front;
+      r_b <= init_back;
     end else begin
-      r <= rin;
+      r_f <= rin_f;
+      r_b <= rin_b;
     end
   end
 
