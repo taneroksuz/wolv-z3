@@ -194,7 +194,7 @@ module writebuffer
 
     v.valid = v.rden | v.load | v.fence;
     if (r.rden | r.load | r.fence == 1) begin
-      if (dmem_out.mem_ready == 1) begin
+      if (dmem_out.mem_ready == 0) begin
         v.valid = 0;
       end
     end
