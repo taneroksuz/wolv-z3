@@ -39,7 +39,6 @@ module writebuffer
     logic [0:0] rden;
     logic [0:0] load;
     logic [0:0] overflow;
-    logic [0:0] empty;
     logic [0:0] full;
     logic [0:0] fence;
     logic [0:0] valid;
@@ -70,7 +69,6 @@ module writebuffer
     rden : 0,
     load : 0,
     overflow : 0,
-    empty : 0,
     full : 0,
     fence : 0,
     valid : 0,
@@ -127,7 +125,6 @@ module writebuffer
 
     v.wren = 0;
     v.full = 0;
-    v.empty = 0;
     if (v.bstore == 1) begin
       if (v.overflow == 1 && v.waddr<v.raddr) begin
         v.wren = 1;
@@ -196,7 +193,7 @@ module writebuffer
     end
 
     v.valid = v.rden | v.load | v.fence;
-    if (v.valid == 1) begin
+    if (r.rden | r.load | r.fence == 1) begin
       if (dmem_out.mem_ready == 1) begin
         v.valid = 0;
       end
