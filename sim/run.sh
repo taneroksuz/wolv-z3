@@ -72,6 +72,8 @@ then
       filename=${filename##*/}
       filename=${filename%.dat}
       cp $DIR/build/compliance/elf/${filename}.host host.dat
+      cp $DIR/build/compliance/elf/${filename}.begin_signature begin_signature.dat
+      cp $DIR/build/compliance/elf/${filename}.end_signature end_signature.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
     done
@@ -82,6 +84,8 @@ then
       filename=${filename##*/}
       filename=${filename%.dat}
       cp $DIR/build/ovp/elf/${filename}.host host.dat
+      cp $DIR/build/ovp/elf/${filename}.begin_signature begin_signature.dat
+      cp $DIR/build/ovp/elf/${filename}.end_signature end_signature.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
     done
@@ -150,6 +154,8 @@ else
       filename=${filename##*/}
       filename=${filename%.dat}
       cp $DIR/build/compliance/elf/${filename}.host host.dat
+      cp $DIR/build/compliance/elf/${filename}.begin_signature begin_signature.dat
+      cp $DIR/build/compliance/elf/${filename}.end_signature end_signature.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES 2> /dev/null
     done
@@ -160,6 +166,8 @@ else
       filename=${filename##*/}
       filename=${filename%.dat}
       cp $DIR/build/ovp/elf/${filename}.host host.dat
+      cp $DIR/build/ovp/elf/${filename}.begin_signature begin_signature.dat
+      cp $DIR/build/ovp/elf/${filename}.end_signature end_signature.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES 2> /dev/null
     done
