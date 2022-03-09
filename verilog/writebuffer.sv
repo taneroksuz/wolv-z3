@@ -39,6 +39,8 @@ module writebuffer
     logic [0:0] rden;
     logic [0:0] load;
     logic [0:0] overflow;
+    logic [0:0] bypass;
+    logic [0:0] empty;
     logic [0:0] full;
     logic [0:0] fence;
     logic [0:0] valid;
@@ -69,6 +71,8 @@ module writebuffer
     rden : 0,
     load : 0,
     overflow : 0,
+    bypass : 0,
+    empty : 0,
     full : 0,
     fence : 0,
     valid : 0,
@@ -84,6 +88,9 @@ module writebuffer
     v = r;
 
     if (r.wren == 1) begin
+      v.rdata = 0;
+      v.ready = 1;
+    end else if (r.bypass == 1) begin
       v.rdata = 0;
       v.ready = 1;
     end else if (r.fence == 1) begin
@@ -103,6 +110,10 @@ module writebuffer
       end else if (v.load == 1) begin
         v.load = 0;
       end
+    end
+
+    if (dmem_out.mem_ready == 1) begin
+      v.empty = 0;
     end
 
     writebuffer_out.mem_rdata = v.rdata;
@@ -153,6 +164,15 @@ module writebuffer
       v.rden = 1;
     end
 
+    v.bypass = 0;
+    if (v.wren == 1 && v.rden == 0) begin
+      if (v.empty == 0) begin
+        v.wren = 0;
+        v.empty = 1;
+        v.bypass = 1;
+      end
+    end
+
     v.wbwren = v.wren;
     v.wbwaddr = v.waddr;
     v.wbwdata = {v.bwstrb,v.baddr,v.bwdata};
@@ -182,7 +202,11 @@ module writebuffer
       v.wstrb = v.wbrdata[67:64];
       v.addr = v.wbrdata[63:32];
       v.wdata = v.wbrdata[31:0];
-    end else if (v.load) begin
+    end else if (v.load == 1) begin
+      v.wstrb = v.bwstrb;
+      v.addr = v.baddr;
+      v.wdata = v.bwdata;
+    end else if (v.bypass == 1) begin
       v.wstrb = v.bwstrb;
       v.addr = v.baddr;
       v.wdata = v.bwdata;
@@ -192,8 +216,8 @@ module writebuffer
       v.wdata = 0;
     end
 
-    v.valid = v.rden | v.load | v.fence;
-    if (r.rden | r.load | r.fence == 1) begin
+    v.valid = v.rden | v.load | v.fence | v.bypass;
+    if ((r.rden | r.load | r.fence | r.bypass) == 1) begin
       if (dmem_out.mem_ready == 0) begin
         v.valid = 0;
       end
