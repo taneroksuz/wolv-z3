@@ -33,19 +33,15 @@ module bram
     input logic [31 : 0] addr;
     input logic [31 : 0] wdata;
     input logic [3  : 0] wstrb;
-    input logic [31 : 0] host;
-    input logic [31 : 0] sig_b;
-    input logic [31 : 0] sig_e;
-    input int sig;
     integer i;
     logic ok;
     begin
       ok = 0;
-      if (addr[31:2] == host[31:2] && |wstrb == 1) begin
+      if (addr[31:2] == host[0][31:2] && |wstrb == 1) begin
         ok = 1;
       end
       if (ok == 1) begin
-        for (i=sig_b; i<sig_e; i=i+4) begin
+        for (i=sig_b[0]; i<sig_e[0]; i=i+4) begin
           $fwrite(sig,"%H\n",bram_block[i/4]);
         end
         if (wdata == 32'h1) begin
@@ -80,7 +76,7 @@ module bram
 
     if (bram_valid == 1) begin
 
-      check(bram_addr,bram_wdata,bram_wstrb,host[0],sig_b[0],sig_e[0],sig);
+      check(bram_addr,bram_wdata,bram_wstrb);
 
       if (bram_wstrb[0] == 1)
         bram_block[bram_addr[(bram_depth+1):2]][7:0] <= bram_wdata[7:0];
