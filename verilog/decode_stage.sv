@@ -217,7 +217,7 @@ module decode_stage
       v.stall = 0;
     end
 
-    writebuffer_in.mem_valid = v.load | v.store;
+    writebuffer_in.mem_valid = v.load | v.store | v.fence;
     writebuffer_in.mem_fence = v.fence;
     writebuffer_in.mem_instr = 0;
     writebuffer_in.mem_addr = v.address;

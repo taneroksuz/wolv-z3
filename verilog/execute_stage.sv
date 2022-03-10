@@ -171,7 +171,7 @@ module execute_stage
       end
     end
 
-    if (v.load == 1 | v.store == 1) begin
+    if (v.load == 1 | v.store == 1 | v.fence == 1) begin
       if (writebuffer_out.mem_ready == 0) begin
         v.stall = 1;
       end else if (writebuffer_out.mem_ready == 1) begin
@@ -190,7 +190,6 @@ module execute_stage
       v.branch = 0;
       v.nop = 0;
       v.csregister = 0;
-      v.fence = 0;
       v.ecall = 0;
       v.ebreak = 0;
       v.mret = 0;

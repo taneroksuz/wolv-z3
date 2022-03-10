@@ -215,6 +215,7 @@ module dtim_ctrl
   parameter [2:0] update = 3;
   parameter [2:0] fence = 4;
   parameter [2:0] reset = 5;
+  parameter [2:0] writeback = 6;
 
   typedef struct packed{
     logic [29-(dtim_depth+dtim_width):0] tag;
@@ -260,6 +261,7 @@ module dtim_ctrl
     logic [0:0] wren;
     logic [0:0] rden;
     logic [0:0] store;
+    logic [0:0] inv;
     logic [0:0] wen;
     logic [0:0] hit;
     logic [0:0] miss;
@@ -287,6 +289,7 @@ module dtim_ctrl
     wren : 0,
     rden : 0,
     store : 0,
+    inv : 0,
     wen : 0,
     hit : 0,
     miss : 0,
@@ -326,6 +329,10 @@ module dtim_ctrl
       end
     end
 
+    if (rin_b.fence == 1) begin
+      v_f.did = rin_b.did;
+    end
+
     rin_f = v_f;
 
   end
@@ -337,6 +344,7 @@ module dtim_ctrl
     v_b.fence = 0;
     v_b.rden = 0;
     v_b.wren = 0;
+    v_b.inv = 0;
     v_b.hit = 0;
     v_b.miss = 0;
     v_b.ldst = 0;
@@ -363,7 +371,9 @@ module dtim_ctrl
           v_b.lock = dctrl_in.lock_out.rdata;
           v_b.dirty = dctrl_in.dirty_out.rdata;
 
-          if (v_b.addr < dtim_base_addr || v_b.addr >= dtim_top_addr) begin
+          if (v_b.fence == 1) begin
+            v_b.inv = v_b.fence;
+          end else if (v_b.addr < dtim_base_addr || v_b.addr >= dtim_top_addr) begin
             v_b.ldst = v_b.wren | v_b.rden;
           end else if (v_b.lock == 0) begin
             v_b.miss = v_b.wren | v_b.rden;
@@ -373,7 +383,10 @@ module dtim_ctrl
             v_b.hit = v_b.rden;
           end
 
-          if (v_b.miss == 1) begin
+          if (v_b.inv == 1) begin
+            v_b.state = fence;
+            v_b.valid = 0;
+          end else if (v_b.miss == 1) begin
             v_b.state = miss;
             v_b.addr[dtim_width+1:0] = 0;
             v_b.cnt = 0;
@@ -401,7 +414,7 @@ module dtim_ctrl
 
           if (dmem_out.mem_ready == 1) begin
             v_b.data[32*v_b.cnt +: 32] = dmem_out.mem_rdata;
-            if (v_b.cnt == 2*itim_width-1) begin
+            if (v_b.cnt == 2*dtim_width-1) begin
               v_b.wen = 1;
               v_b.lock = 1;
               v_b.valid = 0;
@@ -445,12 +458,51 @@ module dtim_ctrl
           v_b.valid = 0;
           v_b.fence = 1;
 
+          v_b.tag = dctrl_in.tag_out.rdata;
+          v_b.lock = dctrl_in.lock_out.rdata;
+          v_b.data = dctrl_in.data_out.rdata;
+
+          if (v_b.lock == 1) begin
+            v_b.addr[31:(dtim_width+2)] = {v_b.tag,v_b.did};
+            v_b.addr[(dtim_width+1):0] = 0;
+            v_b.state = writeback;
+            v_b.valid = 1;
+          end
+
+          v_b.cnt = 0;
+
+        end
+      writeback :
+        begin
+
+          v_b.wen = 1;
+          v_b.lock = 0;
+          v_b.dirty = 0;
+          v_b.fence = 1;
+
+          if (dmem_out.mem_ready == 1) begin
+            if (v_b.cnt == 2*dtim_width-1) begin
+              v_b.wen = 1;
+              v_b.lock = 0;
+              v_b.valid = 0;
+              v_b.state = fence;
+            end else begin
+              v_b.addr = v_b.addr + 4;
+              v_b.cnt = v_b.cnt + 1;
+            end
+          end
+
         end
       default :
         begin
 
         end
     endcase
+
+    if (v_b.state == writeback) begin
+      v_b.wdata = v_b.data[32*v_b.cnt +: 32];
+      v_b.wstrb = 4'hF;
+    end
 
     if (v_b.store == 1) begin
       v_b.sdata = v_b.data[32*v_b.wid +: 32];
@@ -488,7 +540,7 @@ module dtim_ctrl
     // dctrl_out.valid_in.wen = v_b.wen or v_b.fence;
     // dctrl_out.valid_in.wdata = v_b.valid;
 
-    if (r_b.state == fence) begin
+    if (v_b.state == fence) begin
       if (v_b.did == 2**dtim_depth-1) begin
         v_b.state = hit;
       end else begin

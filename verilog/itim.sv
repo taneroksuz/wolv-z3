@@ -212,6 +212,7 @@ module itim_ctrl
     logic [0:0] lock;
     logic [0:0] en;
     logic [0:0] wen;
+    logic [0:0] inv;
     logic [0:0] hit;
     logic [0:0] miss;
     logic [0:0] load;
@@ -232,6 +233,7 @@ module itim_ctrl
     lock : 0,
     en : 0,
     wen : 0,
+    inv : 0,
     hit : 0,
     miss : 0,
     load : 0,
@@ -264,6 +266,10 @@ module itim_ctrl
       end
     end
 
+    if (rin_b.fence == 1) begin
+      v_f.did = rin_b.did;
+    end
+
     rin_f = v_f;
 
   end
@@ -274,6 +280,7 @@ module itim_ctrl
 
     v_b.fence = 0;
     v_b.en = 0;
+    v_b.inv = 0;
     v_b.hit = 0;
     v_b.miss = 0;
     v_b.load = 0;
@@ -294,7 +301,9 @@ module itim_ctrl
           v_b.wen = 0;
           v_b.lock = ictrl_in.lock_out.rdata;
 
-          if (v_b.addr < itim_base_addr || v_b.addr >= itim_top_addr) begin
+          if (v_b.fence == 1) begin
+            v_b.inv = v_b.fence;
+          end else if (v_b.addr < itim_base_addr || v_b.addr >= itim_top_addr) begin
             v_b.load = v_b.en;
           end else if (v_b.lock == 0) begin
             v_b.miss = v_b.en;
@@ -304,7 +313,10 @@ module itim_ctrl
             v_b.hit = v_b.en;
           end
 
-          if (v_b.miss == 1) begin
+          if (v_b.inv == 1) begin
+            v_b.state = fence;
+            v_b.valid = 0;
+          end if (v_b.miss == 1) begin
             v_b.state = miss;
             v_b.addr[itim_width+1:0] = 0;
             v_b.cnt = 0;
@@ -362,7 +374,7 @@ module itim_ctrl
       fence :
         begin
 
-          v_b.wen = 0;
+          v_b.wen = 1;
           v_b.lock = 0;
           v_b.valid = 0;
           v_b.fence = 1;
@@ -395,7 +407,7 @@ module itim_ctrl
     // ictrl_out.valid_in.wen = v_b.wen or v_b.fence;
     // ictrl_out.valid_in.wdata = v_b.valid;
 
-    if (r_b.state == fence) begin
+    if (v_b.state == fence) begin
       if (v_b.did == 2**itim_depth-1) begin
         v_b.state = hit;
       end else begin
