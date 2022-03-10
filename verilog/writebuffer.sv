@@ -165,13 +165,13 @@ module writebuffer
     end
 
     v.bypass = 0;
-    if (v.wren == 1 && v.rden == 0) begin
-      if (v.empty == 0) begin
-        v.wren = 0;
-        v.empty = 1;
-        v.bypass = 1;
-      end
-    end
+    // if (v.wren == 1 && v.rden == 0) begin
+    //   if (v.empty == 0) begin
+    //     v.wren = 0;
+    //     v.empty = 1;
+    //     v.bypass = 1;
+    //   end
+    // end
 
     v.wbwren = v.wren;
     v.wbwaddr = v.waddr;

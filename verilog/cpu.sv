@@ -314,6 +314,21 @@ module cpu
     .dmem_in (dmem_in)
   );
 
+  generate
+
+    if (signature_enable == 1) begin
+
+      signature signature_comp
+      (
+        .rst (rst),
+        .clk (clk),
+        .dmem_in (dtim_in)
+      );
+
+    end
+
+  endgenerate
+
   assign imemory_valid = imem_in.mem_valid;
   assign imemory_instr = imem_in.mem_instr;
   assign imemory_addr = imem_in.mem_addr;

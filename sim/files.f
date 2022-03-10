@@ -24,6 +24,7 @@
 ../../verilog/clint.sv
 ../../verilog/itim.sv
 ../../verilog/dtim.sv
+../../verilog/tb/signature.sv
 ../../verilog/cpu.sv
 ../../verilog/tb/bram.sv
 ../../verilog/tb/check.sv

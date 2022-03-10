@@ -3,6 +3,8 @@ package configure;
   timeunit 1ns;
   timeprecision 1ps;
 
+  parameter signature_enable = 1;
+
   parameter prefetch_depth = 4;
   parameter writebuffer_depth = 4;
 

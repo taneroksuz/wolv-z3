@@ -107,6 +107,14 @@ then
     filename=${filename%.dat}
     subpath=${dirname%/dat*}
     cp $DIR/${subpath}/elf/${filename}.host host.dat
+    if [ -e $DIR/${subpath}/elf/${filename}.begin_signature ]
+    then
+      cp $DIR/${subpath}/elf/${filename}.begin_signature begin_signature.dat
+    fi
+    if [ -e $DIR/${subpath}/elf/${filename}.end_signature ]
+    then
+      cp $DIR/${subpath}/elf/${filename}.end_signature end_signature.dat
+    fi
     obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
   fi
 else
@@ -189,6 +197,14 @@ else
     filename=${filename%.dat}
     subpath=${dirname%/dat*}
     cp $DIR/${subpath}/elf/${filename}.host host.dat
+    if [ -e $DIR/${subpath}/elf/${filename}.begin_signature ]
+    then
+      cp $DIR/${subpath}/elf/${filename}.begin_signature begin_signature.dat
+    fi
+    if [ -e $DIR/${subpath}/elf/${filename}.end_signature ]
+    then
+      cp $DIR/${subpath}/elf/${filename}.end_signature end_signature.dat
+    fi
     obj_dir/Vsoc $CYCLES 2> /dev/null
   fi
 fi

@@ -14,8 +14,6 @@ module check
 	timeprecision 1ps;
 
   logic [31 : 0] host[0:0];
-  logic [31 : 0] begin_signature[0:0];
-  logic [31 : 0] end_signature[0:0];
 
   task check;
     input logic [31 : 0] check_addr;
@@ -40,23 +38,8 @@ module check
     end
   endtask
 
-  task signature;
-    input logic [31 : 0] check_addr;
-    input logic [31 : 0] check_wdata;
-    input logic [3  : 0] check_wstrb;
-    input logic [31 : 0] begin_signature;
-    input logic [31 : 0] end_signature;
-    begin
-      if (check_addr[31:2] >= begin_signature[31:2] && check_addr[31:2] <= end_signature[31:2] && |check_wstrb == 1) begin
-        $write("%H",check_wdata);
-      end
-    end
-  endtask
-
   initial begin
     $readmemh("host.dat", host);
-    $readmemh("begin_signature.dat", begin_signature);
-    $readmemh("end_signature.dat", end_signature);
   end
 
   always_ff @(posedge clk) begin
@@ -64,8 +47,6 @@ module check
     if (check_valid == 1) begin
 
       check(check_addr,check_wdata,check_wstrb,host[0]);
-
-      signature(check_addr,check_wdata,check_wstrb,begin_signature[0],end_signature[0]);
 
     end
 
