@@ -121,7 +121,7 @@ module soc
       end else begin
         v.clint_d = 0;
         v.print_d = 0;
-        v.bram_d = 0;
+        v.bram_d = dmemory_valid;
         dbase_addr = 0;
       end
     end
@@ -152,7 +152,7 @@ module soc
       end else begin
         v.clint_i = 0;
         v.print_i = 0;
-        v.bram_i = 0;
+        v.bram_i = imemory_valid;
         ibase_addr = 0;
       end
     end
@@ -262,17 +262,6 @@ module soc
     .bram_wstrb (bram_wstrb),
     .bram_rdata (bram_rdata),
     .bram_ready (bram_ready)
-  );
-
-  check check_comp
-  (
-    .rst (rst),
-    .clk (clk),
-    .check_valid (dmemory_valid),
-    .check_instr (dmemory_instr),
-    .check_addr (dmemory_addr),
-    .check_wdata (dmemory_wdata),
-    .check_wstrb (dmemory_wstrb)
   );
 
   print print_comp
