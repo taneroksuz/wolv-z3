@@ -2,11 +2,12 @@ default: all
 
 src_dir = $(BASEDIR)/soft/src/ovp
 bld_dir = $(BASEDIR)/build/ovp/elf
+ref_dir = $(BASEDIR)/build/ovp/ref
 
-include $(src_dir)/rv32i/Makefrag
-include $(src_dir)/rv32c/Makefrag
-include $(src_dir)/rv32b/Makefrag
-include $(src_dir)/rv32m/Makefrag
+include $(src_dir)/asm/rv32i/Makefrag
+include $(src_dir)/asm/rv32c/Makefrag
+include $(src_dir)/asm/rv32b/Makefrag
+include $(src_dir)/asm/rv32m/Makefrag
 
 RISCV_GCC ?= $(RISCV)/riscv64-unknown-elf-gcc
 RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
@@ -16,7 +17,7 @@ RISCV_OBJDUMP ?= $(RISCV)/riscv64-unknown-elf-objdump -Mnumeric,no-aliases --dis
 RISCV_OBJCOPY ?= $(RISCV)/riscv64-unknown-elf-objcopy -O binary
 RISCV_NM ?= $(RISCV)/riscv64-unknown-elf-nm -A
 
-vpath %.S $(src_dir)
+vpath %.S $(src_dir)/asm
 
 define compile_template
 
