@@ -16,6 +16,10 @@ export SYSTEMC_LIBDIR=$SYSTEMC/lib-linux64/
 export SYSTEMC_INCLUDE=$SYSTEMC/include/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SYSTEMC/lib-linux64/
 
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
 if [[ "$5" = [0-9]* ]];
 then
   CYCLES="$5"
@@ -74,8 +78,15 @@ then
       cp $DIR/build/compliance/elf/${filename}.host host.dat
       cp $DIR/build/compliance/elf/${filename}.begin_signature begin_signature.dat
       cp $DIR/build/compliance/elf/${filename}.end_signature end_signature.dat
+      cp $DIR/build/compliance/ref/${filename}.reference_output reference.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
+      if [ "$(diff --color reference.dat signature.dat)" != "" ]
+      then
+        echo "${red}RESULTS NOT OK${reset}"
+      else
+        echo "${green}RESULTS OK${reset}"
+      fi
     done
   elif [ "$4" = 'ovp' ]
   then
@@ -86,8 +97,15 @@ then
       cp $DIR/build/ovp/elf/${filename}.host host.dat
       cp $DIR/build/ovp/elf/${filename}.begin_signature begin_signature.dat
       cp $DIR/build/ovp/elf/${filename}.end_signature end_signature.dat
+      cp $DIR/build/ovp/ref/${filename}.reference_output reference.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
+      if [ "$(diff --color reference.dat signature.dat)" != "" ]
+      then
+        echo "${red}RESULTS NOT OK${reset}"
+      else
+        echo "${green}RESULTS OK${reset}"
+      fi
     done
   elif [ "$4" = 'isa' ]
   then
@@ -115,7 +133,20 @@ then
     then
       cp $DIR/${subpath}/elf/${filename}.end_signature end_signature.dat
     fi
+    if [ -e $DIR/${subpath}/ref/${filename}.reference_output ]
+    then
+      cp $DIR/${subpath}/ref/${filename}.reference_output reference.dat
+    fi
     obj_dir/Vsoc $CYCLES ${filename} 2> /dev/null
+    if [ -f "reference.dat" ]
+    then
+      if [ "$(diff --color reference.dat signature.dat)" != "" ]
+      then
+        echo "${red}RESULTS NOT OK${reset}"
+      else
+        echo "${green}RESULTS OK${reset}"
+      fi
+    fi
   fi
 else
 	${VERILATOR} --sc -Wno-UNOPTFLAT -Wno-UNSIGNED -f ${DIR}/sim/files.f --top-module soc --exe ${DIR}/verilog/tb/soc.cpp
@@ -164,8 +195,15 @@ else
       cp $DIR/build/compliance/elf/${filename}.host host.dat
       cp $DIR/build/compliance/elf/${filename}.begin_signature begin_signature.dat
       cp $DIR/build/compliance/elf/${filename}.end_signature end_signature.dat
+      cp $DIR/build/compliance/ref/${filename}.reference_output reference.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES 2> /dev/null
+      if [ "$(diff --color reference.dat signature.dat)" != "" ]
+      then
+        echo "${red}RESULTS NOT OK${reset}"
+      else
+        echo "${green}RESULTS OK${reset}"
+      fi
     done
   elif [ "$4" = 'ovp' ]
   then
@@ -176,8 +214,15 @@ else
       cp $DIR/build/ovp/elf/${filename}.host host.dat
       cp $DIR/build/ovp/elf/${filename}.begin_signature begin_signature.dat
       cp $DIR/build/ovp/elf/${filename}.end_signature end_signature.dat
+      cp $DIR/build/ovp/ref/${filename}.reference_output reference.dat
       echo "${filename}"
     	obj_dir/Vsoc $CYCLES 2> /dev/null
+      if [ "$(diff --color reference.dat signature.dat)" != "" ]
+      then
+        echo "${red}RESULTS NOT OK${reset}"
+      else
+        echo "${green}RESULTS OK${reset}"
+      fi
     done
   elif [ "$4" = 'isa' ]
   then
@@ -205,7 +250,20 @@ else
     then
       cp $DIR/${subpath}/elf/${filename}.end_signature end_signature.dat
     fi
+    if [ -e $DIR/${subpath}/ref/${filename}.reference_output ]
+    then
+      cp $DIR/${subpath}/ref/${filename}.reference_output reference.dat
+    fi
     obj_dir/Vsoc $CYCLES 2> /dev/null
+    if [ -f "reference.dat" ]
+    then
+      if [ "$(diff --color reference.dat signature.dat)" != "" ]
+      then
+        echo "${red}RESULTS NOT OK${reset}"
+      else
+        echo "${green}RESULTS OK${reset}"
+      fi
+    fi
   fi
 fi
 end=`date +%s`

@@ -48,7 +48,7 @@ module bram
           $display("TEST SUCCEEDED");
           $finish;
         end else begin
-          $display("TEST FAILED");
+          $display("TEST STOPPED");
           $finish;
         end
       end
