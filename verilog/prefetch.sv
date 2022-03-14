@@ -122,11 +122,16 @@ module prefetch
       v.rden2 = 1;
     end
 
+    if (v.wren == 1) begin
+      if (v.rden1 == 0) begin
+        v.addr = {v.paddr[31:2],2'b0};
+      end else if (v.rden2 == 0) begin
+        v.addr = {(v.paddr[31:2]+30'b1),2'b0};
+      end
+    end
+
     if (v.rden1 == 0) begin
       v.incr = 0;
-      if (v.wren == 1) begin
-        v.addr = {v.paddr[31:2],2'b0};
-      end
     end else if (v.rden2 == 0) begin
       if (v.paddr[1:1] == 0) begin
         v.rdata = v.rdata1[31:0];
