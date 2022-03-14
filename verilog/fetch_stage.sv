@@ -30,8 +30,9 @@ module fetch_stage
     v.spec = csr_out.exception | csr_out.mret | d.d.jump | d.e.clear;
 
     if (prefetch_out.mem_ready == 1) begin
-      v.instr = prefetch_out.mem_rdata[31:0];
+      v.instr = prefetch_out.mem_rdata;
     end else begin
+      v.instr = nop_instr;
       v.stall = 1;
     end
 

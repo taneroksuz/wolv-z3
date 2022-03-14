@@ -14,15 +14,17 @@ module prefetch
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic [60 : 0] prefetch_buffer[0:2**prefetch_depth-1] = '{default:'0};
+  logic [62 : 0] prefetch_buffer[0:2**prefetch_depth-1] = '{default:'0};
 
   typedef struct packed{
+    logic [2*prefetch_depth-1:0] incr;
+    logic [2*prefetch_depth-1:0] step;
     logic [prefetch_depth-1:0] wid;
     logic [prefetch_depth-1:0] rid1;
     logic [prefetch_depth-1:0] rid2;
-    logic [60:0] wdata;
-    logic [60:0] rdata1;
-    logic [60:0] rdata2;
+    logic [62:0] wdata;
+    logic [62:0] rdata1;
+    logic [62:0] rdata2;
     logic [0:0] pwren;
     logic [0:0] wren;
     logic [0:0] rden1;
@@ -38,6 +40,8 @@ module prefetch
   } reg_type;
 
   reg_type init_reg = '{
+    incr : 0,
+    step : 0,
     wid : 0,
     rid1 : 0,
     rid2 : 0,
@@ -65,7 +69,7 @@ module prefetch
 
     v = r;
 
-    v.valid = 1;
+    v.valid = 0;
 
     v.ready = 0;
     v.rdata = 0;
@@ -80,8 +84,14 @@ module prefetch
 
     if (imem_out.mem_ready == 1) begin
       v.wren = 1;
-      v.wid = v.addr[(prefetch_depth+2):3];
-      v.wdata = {v.addr[31:3],imem_out.mem_rdata};
+      v.wid = v.addr[(prefetch_depth+1):2];
+      v.wdata = {v.wren,v.addr[31:2],imem_out.mem_rdata};
+    end
+
+    if (v.incr < 2**prefetch_depth-1) begin
+      v.incr = v.incr + 2;
+      v.addr = v.addr + 4;
+      v.valid = 1;
     end
 
     if (prefetch_in.mem_valid == 1) begin
@@ -89,26 +99,29 @@ module prefetch
       v.paddr = prefetch_in.mem_addr;
     end
 
-    v.rid1 = v.paddr[prefetch_depth+2:3];
+    v.rid1 = v.paddr[prefetch_depth+1:2];
 
     if (v.rid1 == 2**prefetch_depth-1) begin
       v.rid2 = 0;
     end else begin
-      v.rid2 = v.paddr[prefetch_depth+2:3]+1;
+      v.rid2 = v.paddr[prefetch_depth+1:2]+1;
     end
+
+    v.pwren = v.wren;
 
     v.rdata1 = prefetch_buffer[v.rid1];
     v.rdata2 = prefetch_buffer[v.rid2];
 
-    if (v.rdata1[60:32] == v.paddr[31:3]) begin
+    if (v.rdata1[62] == 1 && v.rdata1[61:32] == v.paddr[31:2]) begin
       v.rden1 = 1;
     end
-    if (v.rdata2[60:32] == (v.paddr[31:3]+1)) begin
+    if (v.rdata2[62] == 1 && v.rdata2[61:32] == (v.paddr[31:2]+1)) begin
       v.rden2 = 1;
     end
 
     if (v.rden1 == 0) begin
-      v.addr = {v.paddr[31:3],3'b0};
+      v.incr = 0;
+      v.addr = {v.paddr[31:2],2'b0};
     end else if (v.rden2 == 0) begin
       if (v.addr[1:1] == 0) begin
         v.rdata = v.rdata1[31:0];
@@ -127,8 +140,16 @@ module prefetch
       end
     end
 
-    if (v.wren == 1) begin
-      v.addr = v.addr + 8;
+    if (v.ready == 0) begin
+      v.step = 0;
+    end else if (v.rdata[1:0] < 3) begin
+      v.step = 1;
+    end else begin
+      v.step = 2;
+    end
+
+    if (v.step <= v.incr) begin
+      v.incr = v.incr - v.step;
     end
 
     imem_in.mem_valid = v.valid;
@@ -137,8 +158,6 @@ module prefetch
     imem_in.mem_addr = v.addr;
     imem_in.mem_wdata = 0;
     imem_in.mem_wstrb = 0;
-
-    v.pwren = v.wren;
 
     rin = v;
 
