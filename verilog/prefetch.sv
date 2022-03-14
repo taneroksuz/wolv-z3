@@ -69,7 +69,7 @@ module prefetch
 
     v = r;
 
-    v.valid = 0;
+    v.valid = 1;
 
     v.ready = 0;
     v.rdata = 0;
@@ -88,10 +88,13 @@ module prefetch
       v.wdata = {v.wren,v.addr[31:2],imem_out.mem_rdata};
     end
 
-    if (v.incr < 2**prefetch_depth-1) begin
-      v.incr = v.incr + 2;
-      v.addr = v.addr + 4;
-      v.valid = 1;
+    if (v.wren == 1) begin
+      if (v.incr < 2**prefetch_depth-1) begin
+        v.incr = v.incr + 2;
+        v.addr = v.addr + 4;
+      end else begin
+        v.valid = 0;
+      end
     end
 
     if (prefetch_in.mem_valid == 1) begin
@@ -121,9 +124,11 @@ module prefetch
 
     if (v.rden1 == 0) begin
       v.incr = 0;
-      v.addr = {v.paddr[31:2],2'b0};
+      if (v.wren == 1) begin
+        v.addr = {v.paddr[31:2],2'b0};
+      end
     end else if (v.rden2 == 0) begin
-      if (v.addr[1:1] == 0) begin
+      if (v.paddr[1:1] == 0) begin
         v.rdata = v.rdata1[31:0];
         v.ready = 1;
       end else if (v.rdata1[17:16] < 3) begin
@@ -131,7 +136,7 @@ module prefetch
         v.ready = 1;
       end
     end else begin
-      if (v.addr[1:1] == 0) begin
+      if (v.paddr[1:1] == 0) begin
         v.rdata = v.rdata1[31:0];
         v.ready = 1;
       end else begin
