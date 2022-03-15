@@ -29,6 +29,8 @@ module prefetch
     logic [0:0] wren;
     logic [0:0] rden1;
     logic [0:0] rden2;
+    logic [0:0] wrden1;
+    logic [0:0] wrden2;
     logic [31:0] paddr;
     logic [31:0] addr;
     logic [0:0] pfence;
@@ -52,6 +54,8 @@ module prefetch
     wren : 0,
     rden1 : 0,
     rden2 : 0,
+    wrden1 : 0,
+    wrden2 : 0,
     paddr : 0,
     addr : 0,
     pfence : 0,
@@ -81,6 +85,9 @@ module prefetch
     v.rdata2 = 0;
 
     v.wren = 0;
+
+    v.wrden1 = 0;
+    v.wrden2 = 0;
 
     if (imem_out.mem_ready == 1) begin
       v.wren = 1;
@@ -130,7 +137,25 @@ module prefetch
       end
     end
 
+    if (v.wren == 1) begin
+      if (r.addr[31:2] == v.paddr[31:2]) begin
+        v.wrden1 = 1;
+      end
+      if (r.addr[31:2] == (v.paddr[31:2]+1)) begin
+        v.wrden2 = 1;
+      end
+    end
+
     if (v.rden1 == 0) begin
+      if (v.wrden1 == 1) begin
+        if (v.paddr[1:1] == 0) begin
+          v.rdata = v.wdata[31:0];
+          v.ready = 1;
+        end else if (v.wdata[17:16] < 3) begin
+          v.rdata = {16'h0,v.wdata[31:16]};
+          v.ready = 1;
+        end
+      end
       v.incr = 0;
     end else if (v.rden2 == 0) begin
       if (v.paddr[1:1] == 0) begin
