@@ -35,6 +35,7 @@ module prefetch
     logic [31:0] addr;
     logic [0:0] pfence;
     logic [0:0] fence;
+    logic [0:0] pvalid;
     logic [0:0] valid;
     logic [31:0] rdata;
     logic [0:0] ready;
@@ -60,6 +61,7 @@ module prefetch
     addr : 0,
     pfence : 0,
     fence : 0,
+    pvalid : 0,
     valid : 0,
     rdata : 0,
     ready : 0,
@@ -72,6 +74,8 @@ module prefetch
   always_comb begin
 
     v = r;
+
+    v.pvalid = 0;
 
     v.valid = 1;
 
@@ -105,6 +109,7 @@ module prefetch
     end
 
     if (prefetch_in.mem_valid == 1) begin
+      v.pvalid = prefetch_in.mem_valid;
       v.pfence = prefetch_in.mem_fence;
       v.paddr = prefetch_in.mem_addr;
     end
@@ -130,14 +135,6 @@ module prefetch
     end
 
     if (v.wren == 1) begin
-      if (v.rden1 == 0) begin
-        v.addr = {v.paddr[31:2],2'b0};
-      end else if (v.rden2 == 0) begin
-        v.addr = {(v.paddr[31:2]+30'b1),2'b0};
-      end
-    end
-
-    if (v.wren == 1) begin
       if (r.addr[31:2] == v.paddr[31:2]) begin
         v.wrden1 = 1;
       end
@@ -156,7 +153,6 @@ module prefetch
           v.ready = 1;
         end
       end
-      v.incr = 0;
     end else if (v.rden2 == 0) begin
       if (v.paddr[1:1] == 0) begin
         v.rdata = v.rdata1[31:0];
@@ -175,6 +171,18 @@ module prefetch
       end
     end
 
+    if (v.pvalid == 1) begin
+      if (v.ready == 0) begin
+        if (v.rden1 == 0) begin
+          v.addr = {v.paddr[31:2],2'b0};
+          v.incr = 0;
+        end else if (v.rden2 == 0) begin
+          v.addr = {(v.paddr[31:2]+30'b1),2'b0};
+          v.incr = 0;
+        end
+      end
+    end
+
     if (v.ready == 0) begin
       v.step = 0;
     end else if (v.rdata[1:0] < 3) begin
@@ -183,8 +191,10 @@ module prefetch
       v.step = 2;
     end
 
-    if (v.step <= v.incr) begin
-      v.incr = v.incr - v.step;
+    if (v.pvalid == 1) begin
+      if (v.step <= v.incr) begin
+        v.incr = v.incr - v.step;
+      end
     end
 
     imem_in.mem_valid = v.valid;
@@ -194,10 +204,10 @@ module prefetch
     imem_in.mem_wdata = 0;
     imem_in.mem_wstrb = 0;
 
-    rin = v;
+    prefetch_out.mem_rdata = v.rdata;
+    prefetch_out.mem_ready = v.ready;
 
-    prefetch_out.mem_rdata = r.rdata;
-    prefetch_out.mem_ready = r.ready;
+    rin = v;
 
   end
 

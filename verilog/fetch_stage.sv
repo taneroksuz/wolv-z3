@@ -25,16 +25,9 @@ module fetch_stage
     v = r;
 
     v.valid = ~(a.d.stall | a.e.stall | d.e.clear);
-    v.stall = a.d.stall | a.e.stall | d.e.clear;
+    v.stall = v.stall | a.d.stall | a.e.stall | d.e.clear;
     v.clear = d.e.clear;
     v.spec = csr_out.exception | csr_out.mret | d.d.jump | d.e.clear;
-
-    if (prefetch_out.mem_ready == 1) begin
-      v.instr = prefetch_out.mem_rdata;
-    end else begin
-      v.instr = nop_instr;
-      v.stall = 1;
-    end
 
     if (csr_out.exception == 1) begin
       v.pc = csr_out.mtvec;
@@ -46,12 +39,20 @@ module fetch_stage
       v.pc = v.pc + ((v.instr[1:0] == 2'b11) ? 4 : 2);
     end
 
-    prefetch_in.mem_valid = 1;
+    prefetch_in.mem_valid = v.valid;
     prefetch_in.mem_fence = d.d.fence;
     prefetch_in.mem_instr = 1;
     prefetch_in.mem_addr = v.pc;
     prefetch_in.mem_wdata = 0;
     prefetch_in.mem_wstrb = 0;
+
+    if (prefetch_out.mem_ready == 1) begin
+      v.instr = prefetch_out.mem_rdata;
+      v.stall = 0;
+    end else begin
+      v.instr = nop_instr;
+      v.stall = 1;
+    end
 
     rin = v;
 
@@ -62,7 +63,7 @@ module fetch_stage
     y.etval = v.etval;
 
     q.pc = r.pc;
-    q.instr = v.instr;
+    q.instr = r.instr;
     q.exception = r.exception;
     q.ecause = r.ecause;
     q.etval = r.etval;
