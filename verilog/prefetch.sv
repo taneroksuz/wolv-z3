@@ -37,6 +37,7 @@ module prefetch
     logic [0:0] fence;
     logic [0:0] pvalid;
     logic [0:0] valid;
+    logic [0:0] comp;
     logic [31:0] rdata;
     logic [0:0] ready;
     logic [0:0] stall;
@@ -63,6 +64,7 @@ module prefetch
     fence : 0,
     pvalid : 0,
     valid : 0,
+    comp : 0,
     rdata : 0,
     ready : 0,
     stall : 0
@@ -92,6 +94,8 @@ module prefetch
 
     v.wrden1 = 0;
     v.wrden2 = 0;
+
+    v.comp = 0;
 
     if (imem_out.mem_ready == 1) begin
       v.wren = 1;
@@ -143,31 +147,36 @@ module prefetch
       end
     end
 
-    if (v.rden1 == 0) begin
+    if (v.paddr[1:1] == 0) begin
       if (v.wrden1 == 1) begin
-        if (v.paddr[1:1] == 0) begin
-          v.rdata = v.wdata[31:0];
-          v.ready = 1;
-        end else if (v.wdata[17:16] < 3) begin
-          v.rdata = {16'h0,v.wdata[31:16]};
+        v.rdata = v.wdata[31:0];
+        v.ready = 1;
+      end else if (v.rden1 == 1) begin
+        v.rdata = v.rdata1[31:0];
+        v.ready = 1;
+      end
+    end else if (v.paddr[1:1] == 1) begin
+      if (v.wrden1 == 1) begin
+        v.rdata[15:0] = v.wdata[31:16];
+        if (&(v.rdata[1:0]) == 0) begin
           v.ready = 1;
         end
+        v.comp = 1;
+      end else if (v.rden1 == 1) begin
+        v.rdata[15:0] = v.rdata1[31:16];
+        if (&(v.rdata[1:0]) == 0) begin
+          v.ready = 1;
+        end
+        v.comp = 1;
       end
-    end else if (v.rden2 == 0) begin
-      if (v.paddr[1:1] == 0) begin
-        v.rdata = v.rdata1[31:0];
-        v.ready = 1;
-      end else if (v.rdata1[17:16] < 3) begin
-        v.rdata = {16'h0,v.rdata1[31:16]};
-        v.ready = 1;
-      end
-    end else begin
-      if (v.paddr[1:1] == 0) begin
-        v.rdata = v.rdata1[31:0];
-        v.ready = 1;
-      end else begin
-        v.rdata = {v.rdata2[15:0],v.rdata1[31:16]};
-        v.ready = 1;
+      if (v.comp == 1) begin
+        if (v.wrden2 == 1) begin
+          v.rdata[31:16] = v.wdata[15:0];
+          v.ready = 1;
+        end else if (v.rden2 == 1) begin
+          v.rdata[31:16] = v.rdata2[15:0];
+          v.ready = 1;
+        end
       end
     end
 
