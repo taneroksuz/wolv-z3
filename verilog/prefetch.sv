@@ -135,10 +135,10 @@ module prefetch
     end
 
     if (v.wren == 1) begin
-      if (r.addr[31:2] == v.paddr[31:2]) begin
+      if (v.wdata[61:32] == v.paddr[31:2]) begin
         v.wrden1 = 1;
       end
-      if (r.addr[31:2] == (v.paddr[31:2]+1)) begin
+      if (v.wdata[61:32] == (v.paddr[31:2]+1)) begin
         v.wrden2 = 1;
       end
     end
@@ -172,7 +172,7 @@ module prefetch
     end
 
     if (v.pvalid == 1) begin
-      if (v.ready == 0) begin
+      if (v.ready == 0 && v.wren == 1) begin
         if (v.rden1 == 0) begin
           v.addr = {v.paddr[31:2],2'b0};
           v.incr = 0;
