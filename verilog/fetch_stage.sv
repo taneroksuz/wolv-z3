@@ -25,9 +25,8 @@ module fetch_stage
     v = r;
 
     v.valid = ~(a.d.stall | a.e.stall | d.e.clear);
+    v.fence = d.d.fence;
     v.stall = v.stall | a.d.stall | a.e.stall | d.e.clear;
-    v.clear = d.e.clear;
-    v.spec = csr_out.exception | csr_out.mret | d.d.jump | d.e.clear;
 
     if (csr_out.exception == 1) begin
       v.pc = csr_out.mtvec;
@@ -40,7 +39,7 @@ module fetch_stage
     end
 
     prefetch_in.mem_valid = v.valid;
-    prefetch_in.mem_fence = d.d.fence;
+    prefetch_in.mem_fence = v.fence;
     prefetch_in.mem_instr = 1;
     prefetch_in.mem_addr = v.pc;
     prefetch_in.mem_wdata = 0;
