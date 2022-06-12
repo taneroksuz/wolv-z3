@@ -16,10 +16,6 @@ package configure;
   parameter dtim_width = 2;
   parameter dtim_depth = 10;
 
-  parameter clint_contexts = 0;
-
-  parameter plic_contexts = 0;
-
   parameter bram_base_addr = 32'h000000;
   parameter bram_top_addr  = 32'h100000;
 
@@ -34,8 +30,5 @@ package configure;
 
   parameter clint_base_addr = 32'h2000000;
   parameter clint_top_addr  = 32'h200C000;
-
-  parameter plic_base_addr = 32'h0C000000;
-  parameter plic_top_addr  = 32'h10000000;
 
 endpackage
