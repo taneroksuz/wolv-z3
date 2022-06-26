@@ -23,7 +23,7 @@ module execute_stage
   output forwarding_execute_in_type forwarding_ein,
   input csr_out_type csr_out,
   output csr_execute_in_type csr_ein,
-  input mem_out_type writebuffer_out,
+  input mem_out_type storebuffer_out,
   input execute_in_type a,
   input execute_in_type d,
   output execute_out_type y,
@@ -149,7 +149,7 @@ module execute_stage
     bit_clmul_in.enable = v.bitmanipulation & ~(d.e.clear | d.e.stall);
     bit_clmul_in.op = v.bit_op.bit_zbc;
 
-    lsu_in.ldata = writebuffer_out.mem_rdata;
+    lsu_in.ldata = storebuffer_out.mem_rdata;
     lsu_in.byteenable = v.byteenable;
     lsu_in.lsu_op = v.lsu_op;
 
@@ -172,9 +172,9 @@ module execute_stage
     end
 
     if (v.load == 1 | v.store == 1 | v.fence == 1) begin
-      if (writebuffer_out.mem_ready == 0) begin
+      if (storebuffer_out.mem_ready == 0) begin
         v.stall = 1;
-      end else if (writebuffer_out.mem_ready == 1) begin
+      end else if (storebuffer_out.mem_ready == 1) begin
         v.wren = v.load & |v.waddr;
         v.wdata = v.ldata;
       end
