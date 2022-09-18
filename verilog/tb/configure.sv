@@ -16,6 +16,11 @@ package configure;
   parameter dtim_width = 2;
   parameter dtim_depth = 10;
 
+  parameter bp_enable = 1;
+  parameter btb_depth = 6;
+  parameter bht_depth = 6;
+  parameter ras_depth = 2;
+
   parameter bram_base_addr = 32'h000000;
   parameter bram_top_addr  = 32'h100000;
 
@@ -30,5 +35,10 @@ package configure;
 
   parameter clint_base_addr = 32'h2000000;
   parameter clint_top_addr  = 32'h200C000;
+
+  parameter clk_freq = 1000000000; // 1000MHz
+  parameter rtc_freq = 32768; // 32768Hz
+
+  parameter clk_divider_rtc = (clk_freq/rtc_freq)/2-1;
 
 endpackage

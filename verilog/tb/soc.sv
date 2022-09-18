@@ -1,8 +1,9 @@
+import configure::*;
+
 module soc
 (
   input logic rst,
-  input logic clk,
-  input logic rtc
+  input logic clk
 );
   timeunit 1ns;
   timeprecision 1ps;
@@ -47,9 +48,9 @@ module soc
   logic [31 : 0] clint_rdata;
   logic [0  : 0] clint_ready;
 
-  logic [0 : 0] meip;
-  logic [0 : 0] msip;
-  logic [0 : 0] mtip;
+  logic [0  : 0] meip;
+  logic [0  : 0] msip;
+  logic [0  : 0] mtip;
 
   logic [63 : 0] mtime;
 
@@ -58,6 +59,8 @@ module soc
 
   logic [31 : 0] ibase_addr;
   logic [31 : 0] dbase_addr;
+
+  logic [31 : 0] host[0:0] = '{default:'0};
 
   typedef struct packed{
     logic [0  : 0] bram_i;
@@ -79,6 +82,10 @@ module soc
 
   reg_type r,rin;
   reg_type v;
+
+  initial begin
+    $readmemh("host.dat", host);
+  end
 
   always_comb begin
 
@@ -118,10 +125,15 @@ module soc
           v.print_d = 0;
           v.bram_d = dmemory_valid;
           dbase_addr = bram_base_addr;
+      end else if (dmemory_addr == host[0]) begin
+          v.clint_d = 0;
+          v.print_d = 0;
+          v.bram_d = dmemory_valid;
+          dbase_addr = bram_base_addr;
       end else begin
         v.clint_d = 0;
         v.print_d = 0;
-        v.bram_d = dmemory_valid;
+        v.bram_d = 0;
         dbase_addr = 0;
       end
     end
@@ -149,10 +161,15 @@ module soc
           v.print_i = 0;
           v.bram_i = imemory_valid;
           ibase_addr = bram_base_addr;
+      end else if (imemory_addr == host[0]) begin
+          v.clint_i = 0;
+          v.print_i = 0;
+          v.bram_i = imemory_valid;
+          ibase_addr = bram_base_addr;
       end else begin
         v.clint_i = 0;
         v.print_i = 0;
-        v.bram_i = imemory_valid;
+        v.bram_i = 0;
         ibase_addr = 0;
       end
     end
@@ -169,23 +186,65 @@ module soc
 
     imem_addr = imemory_addr - ibase_addr;
 
-    bram_valid = v.bram_d ? dmemory_valid : imemory_valid;
-    bram_instr = v.bram_d ? dmemory_instr : imemory_instr;
-    bram_addr = v.bram_d ? dmem_addr : imem_addr;
-    bram_wdata = v.bram_d ? dmemory_wdata : imemory_wdata;
-    bram_wstrb = v.bram_d ? dmemory_wstrb : imemory_wstrb;
+    if (v.bram_d == 1) begin
+      bram_valid = dmemory_valid;
+      bram_instr = dmemory_instr;
+      bram_addr = dmem_addr;
+      bram_wdata = dmemory_wdata;
+      bram_wstrb = dmemory_wstrb;
+    end else if (v.bram_i == 1) begin
+      bram_valid = imemory_valid;
+      bram_instr = imemory_instr;
+      bram_addr = imem_addr;
+      bram_wdata = imemory_wdata;
+      bram_wstrb = imemory_wstrb;
+    end else begin
+      bram_valid = 0;
+      bram_instr = 0;
+      bram_addr = 0;
+      bram_wdata = 0;
+      bram_wstrb = 0;
+    end
 
-    print_valid = v.print_d ? dmemory_valid : imemory_valid;
-    print_instr = v.print_d ? dmemory_instr : imemory_instr;
-    print_addr = v.print_d ? dmem_addr : imem_addr;
-    print_wdata = v.print_d ? dmemory_wdata : imemory_wdata;
-    print_wstrb = v.print_d ? dmemory_wstrb : imemory_wstrb;
+    if (v.print_d == 1) begin
+      print_valid = dmemory_valid;
+      print_instr = dmemory_instr;
+      print_addr = dmem_addr;
+      print_wdata = dmemory_wdata;
+      print_wstrb = dmemory_wstrb;
+    end else if (v.print_i == 1) begin
+      print_valid = imemory_valid;
+      print_instr = imemory_instr;
+      print_addr = imem_addr;
+      print_wdata = imemory_wdata;
+      print_wstrb = imemory_wstrb;
+    end else begin
+      print_valid = 0;
+      print_instr = 0;
+      print_addr = 0;
+      print_wdata = 0;
+      print_wstrb = 0;
+    end
 
-    clint_valid = v.clint_d ? dmemory_valid : imemory_valid;
-    clint_instr = v.clint_d ? dmemory_instr : imemory_instr;
-    clint_addr = v.clint_d ? dmem_addr : imem_addr;
-    clint_wdata = v.clint_d ? dmemory_wdata : imemory_wdata;
-    clint_wstrb = v.clint_d ? dmemory_wstrb : imemory_wstrb;
+    if (v.clint_d == 1) begin
+      clint_valid = dmemory_valid;
+      clint_instr = dmemory_instr;
+      clint_addr = dmem_addr;
+      clint_wdata = dmemory_wdata;
+      clint_wstrb = dmemory_wstrb;
+    end else if (v.clint_i == 1) begin
+      clint_valid = imemory_valid;
+      clint_instr = imemory_instr;
+      clint_addr = imem_addr;
+      clint_wdata = imemory_wdata;
+      clint_wstrb = imemory_wstrb;
+    end else begin
+      clint_valid = 0;
+      clint_instr = 0;
+      clint_addr = 0;
+      clint_wdata = 0;
+      clint_wstrb = 0;
+    end
 
     rin = v;
 
@@ -281,7 +340,6 @@ module soc
   (
     .rst (rst),
     .clk (clk),
-    .rtc (rtc),
     .clint_valid (clint_valid),
     .clint_instr (clint_instr),
     .clint_addr (clint_addr),

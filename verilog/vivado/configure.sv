@@ -5,7 +5,7 @@ package configure;
   parameter fetchbuffer_depth = 4;
   parameter storebuffer_depth = 4;
 
-  parameter bram_depth = 13;
+  parameter bram_depth = 10;
 
   parameter itim_enable = 1;
   parameter itim_width = 2;
@@ -15,8 +15,13 @@ package configure;
   parameter dtim_width = 2;
   parameter dtim_depth = 10;
 
+  parameter bp_enable = 1;
+  parameter btb_depth = 6;
+  parameter bht_depth = 6;
+  parameter ras_depth = 2;
+
   parameter bram_base_addr = 32'h0;
-  parameter bram_top_addr  = 32'h8000;
+  parameter bram_top_addr  = 32'h1000;
 
   parameter itim_base_addr = 32'h0;
   parameter itim_top_addr  = 32'h4000;
@@ -30,13 +35,14 @@ package configure;
   parameter clint_base_addr = 32'h2000000;
   parameter clint_top_addr  = 32'h200C000;
 
-  parameter clk_freq = 100000000; // 100MHz
-  parameter clk_pll = 50000000; // 50MHz
+  parameter axi_base_addr = 32'h80000000;
+  parameter axi_top_addr  = 32'h90000000;
+
+  parameter clk_freq = 25000000; // 25MHz
   parameter rtc_freq = 32768; // 32768Hz
   parameter baudrate = 115200;
 
-  parameter clk_divider_pll = (clk_freq/clk_pll)/2-1;
   parameter clk_divider_rtc = (clk_freq/rtc_freq)/2-1;
-  parameter clks_per_bit = clk_pll/baudrate-1;
+  parameter clks_per_bit = clk_freq/baudrate-1;
 
 endpackage
