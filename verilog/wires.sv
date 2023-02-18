@@ -903,7 +903,7 @@ package wires;
   } csr_execute_in_type;
 
   typedef struct packed{
-    logic [0  : 0] exception;
+    logic [0  : 0] trap;
     logic [0  : 0] mret;
     logic [31 : 0] mtvec;
     logic [31 : 0] mepc;
