@@ -2,8 +2,8 @@ import wires::*;
 
 module cpu
 (
-  input logic rst,
-  input logic clk,
+  input logic reset,
+  input logic clock,
   output logic [0  : 0] imemory_valid,
   output logic [0  : 0] imemory_instr,
   output logic [31 : 0] imemory_addr,
@@ -134,16 +134,16 @@ module cpu
 
   div div_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .div_in (div_in),
     .div_out (div_out)
   );
 
   mul mul_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .mul_in (mul_in),
     .mul_out (mul_out)
   );
@@ -156,8 +156,8 @@ module cpu
 
   bit_clmul bit_clmul_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .bit_clmul_in (bit_clmul_in),
     .bit_clmul_out (bit_clmul_out)
   );
@@ -183,8 +183,8 @@ module cpu
 
   register register_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .register_rin (register_rin),
     .register_win (register_win),
     .register_out (register_out)
@@ -192,8 +192,8 @@ module cpu
 
   csr csr_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .csr_din (csr_din),
     .csr_ein (csr_ein),
     .csr_out (csr_out),
@@ -205,8 +205,8 @@ module cpu
 
   fetchbuffer fetchbuffer_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .fetchbuffer_in (fetchbuffer_in),
     .fetchbuffer_out (fetchbuffer_out),
     .imem_out (itim_out),
@@ -215,8 +215,8 @@ module cpu
 
   storebuffer storebuffer_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .storebuffer_in (storebuffer_in),
     .storebuffer_out (storebuffer_out),
     .dmem_in (dtim_in),
@@ -225,8 +225,8 @@ module cpu
 
   fetch_stage fetch_stage_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .csr_out (csr_out),
     .fetchbuffer_out (fetchbuffer_out),
     .fetchbuffer_in (fetchbuffer_in),
@@ -238,8 +238,8 @@ module cpu
 
   decode_stage decode_stage_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .decoder_out (decoder_out),
     .decoder_in (decoder_in),
     .compress_out (compress_out),
@@ -263,8 +263,8 @@ module cpu
 
   execute_stage execute_stage_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .alu_out (alu_out),
     .alu_in (alu_in),
     .lsu_out (lsu_out),
@@ -294,8 +294,8 @@ module cpu
     .itim_enable (itim_enable)
   ) itim_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .itim_in (itim_in),
     .itim_out (itim_out),
     .imem_out (imem_out),
@@ -306,8 +306,8 @@ module cpu
     .dtim_enable (dtim_enable)
   ) dtim_comp
   (
-    .rst (rst),
-    .clk (clk),
+    .reset (reset),
+    .clock (clock),
     .dtim_in (dtim_in),
     .dtim_out (dtim_out),
     .dmem_out (dmem_out),
