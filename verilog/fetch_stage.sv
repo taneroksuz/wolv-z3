@@ -24,7 +24,7 @@ module fetch_stage
 
     v = r;
 
-    v.valid = ~(a.d.stall | a.e.stall | d.e.clear) | a.d.fence;
+    v.valid = ~(a.d.stall | a.e.stall | d.e.clear) | d.d.fence;
     v.stall = d.f.stall | d.d.stall | d.e.stall | d.e.clear;
 
     v.spec = 0;
@@ -38,12 +38,15 @@ module fetch_stage
     end else if (d.d.jump == 1) begin
       v.spec = 1;
       v.pc = d.d.address;
+    end else if (d.d.fence == 1) begin
+      v.spec = 1;
+      v.pc = d.f.pc;
     end else if (v.stall == 0) begin
       v.pc = v.pc + ((v.instr[1:0] == 2'b11) ? 4 : 2);
     end
 
     fetchbuffer_in.mem_valid = v.valid;
-    fetchbuffer_in.mem_fence = a.d.fence;
+    fetchbuffer_in.mem_fence = d.d.fence;
     fetchbuffer_in.mem_spec = v.spec;
     fetchbuffer_in.mem_instr = 1;
     fetchbuffer_in.mem_addr = v.pc;
