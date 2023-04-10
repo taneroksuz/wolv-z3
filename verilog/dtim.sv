@@ -220,6 +220,11 @@ module dtim_ctrl
     v_b.miss = 0;
     v_b.ldst = 0;
 
+    v_b.valid = 0;
+    v_b.addr = 0;
+    v_b.wdata = 0;
+    v_b.wstrb = 0;
+
     v_b.rdata = 0;
     v_b.ready = 0;
 
@@ -339,10 +344,6 @@ module dtim_ctrl
             end else begin
               v_b.wid = v_b.wid + 1;
             end
-            v_b.valid = 0;
-            v_b.addr = 0;
-            v_b.wdata = 0;
-            v_b.wstrb = 0;
           end
           v_b.tag = dvec_out[v_b.wid].rdata[61-(depth+width):32];
           v_b.lock = dvec_out[v_b.wid].rdata[63-(depth+width)];
