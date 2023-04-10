@@ -21,6 +21,7 @@
 ../../verilog/fetch_stage.sv
 ../../verilog/decode_stage.sv
 ../../verilog/execute_stage.sv
+../../verilog/arbiter.sv
 ../../verilog/clint.sv
 ../../verilog/itim.sv
 ../../verilog/dtim.sv
