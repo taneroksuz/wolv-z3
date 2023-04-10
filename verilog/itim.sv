@@ -99,17 +99,16 @@ module itim_ctrl
     logic [29-(depth+width):0] tag;
     logic [depth-1:0] did;
     logic [width-1:0] wid;
-    logic [width-1:0] cnt;
     logic [31:0] addr;
     logic [31:0] idata;
     logic [31:0] data;
     logic [31:0] rdata;
     logic [0:0] ready;
-    logic [0:0] fence;
     logic [0:0] valid;
     logic [0:0] ilock;
     logic [0:0] lock;
     logic [0:0] enable;
+    logic [0:0] fence;
     logic [0:0] wen;
     logic [0:0] inv;
     logic [0:0] clear;
@@ -124,17 +123,16 @@ module itim_ctrl
     tag : 0,
     did : 0,
     wid : 0,
-    cnt : 0,
     addr : 0,
     idata : 0,
     data : 0,
     rdata : 0,
     ready : 0,
-    fence : 0,
     valid : 0,
     ilock : 0,
     lock : 0,
     enable : 0,
+    fence : 0,
     wen : 0,
     inv : 0,
     clear : 0,

@@ -6,12 +6,12 @@ package configure;
   parameter storebuffer_depth = 4;
 
   parameter itim_enable = 1;
-  parameter itim_width = 2;
-  parameter itim_depth = 10;
+  parameter itim_width = 4;
+  parameter itim_depth = 512;
 
   parameter dtim_enable = 1;
-  parameter dtim_width = 2;
-  parameter dtim_depth = 10;
+  parameter dtim_width = 4;
+  parameter dtim_depth = 512;
 
   parameter bp_enable = 1;
   parameter btb_depth = 6;
