@@ -70,8 +70,6 @@ module soc
   logic [0  : 0] rom_valid;
   logic [0  : 0] rom_instr;
   logic [31 : 0] rom_addr;
-  logic [31 : 0] rom_wdata;
-  logic [3  : 0] rom_wstrb;
   logic [31 : 0] rom_rdata;
   logic [0  : 0] rom_ready;
 
@@ -125,7 +123,7 @@ module soc
           uart_valid = 0;
           clint_valid = 0;
           axi_valid = memory_valid;
-          base_addr = rom_base_addr;
+          base_addr = axi_base_addr;
       end else if (memory_addr >= clint_base_addr &&
         memory_addr < clint_top_addr) begin
           rom_valid = 0;
