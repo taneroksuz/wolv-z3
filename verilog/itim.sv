@@ -262,7 +262,7 @@ module itim_ctrl
         end
     endcase
 
-    ivec_in[v_f.wid].raddr = rin_f.did;
+    ivec_in[rin_f.wid].raddr = rin_f.did;
 
     ivec_in[v_b.wid].wen = v_b.wen;
     ivec_in[v_b.wid].waddr = v_b.did;

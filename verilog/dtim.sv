@@ -298,8 +298,8 @@ module dtim_ctrl
       miss :
         begin
           if (dmem_out.mem_ready == 1) begin
-            v_b.wen = v_b.store;
-            v_b.lock = v_b.store;
+            v_b.wen = 1;
+            v_b.lock = 1;
             v_b.dirty = v_b.store;
             v_b.data = dmem_out.mem_rdata;
             if (v_b.sstrb[0])
@@ -361,7 +361,7 @@ module dtim_ctrl
         end
     endcase
 
-    dvec_in[v_f.wid].raddr = rin_f.did;
+    dvec_in[rin_f.wid].raddr = rin_f.did;
 
     if (v_b.rinv == 1) begin
       for (int i=0; i<dtim_width; i=i+1) begin
