@@ -203,33 +203,13 @@ module cpu
     .mtime (mtime)
   );
 
-  fetchbuffer fetchbuffer_comp
-  (
-    .reset (reset),
-    .clock (clock),
-    .fetchbuffer_in (fetchbuffer_in),
-    .fetchbuffer_out (fetchbuffer_out),
-    .imem_out (itim_out),
-    .imem_in (itim_in)
-  );
-
-  storebuffer storebuffer_comp
-  (
-    .reset (reset),
-    .clock (clock),
-    .storebuffer_in (storebuffer_in),
-    .storebuffer_out (storebuffer_out),
-    .dmem_in (dtim_in),
-    .dmem_out (dtim_out)
-  );
-
   fetch_stage fetch_stage_comp
   (
     .reset (reset),
     .clock (clock),
     .csr_out (csr_out),
-    .fetchbuffer_out (fetchbuffer_out),
-    .fetchbuffer_in (fetchbuffer_in),
+    .imem_out (itim_out),
+    .imem_in (itim_in),
     .a (fetch_in_a),
     .d (fetch_in_d),
     .y (fetch_out_y),
@@ -254,7 +234,7 @@ module cpu
     .forwarding_rin (forwarding_rin),
     .csr_out (csr_out),
     .csr_din (csr_din),
-    .storebuffer_in (storebuffer_in),
+    .dmem_in (dtim_in),
     .a (decode_in_a),
     .d (decode_in_d),
     .y (decode_out_y),
@@ -283,7 +263,7 @@ module cpu
     .forwarding_ein (forwarding_ein),
     .csr_out (csr_out),
     .csr_ein (csr_ein),
-    .storebuffer_out (storebuffer_out),
+    .dmem_out (dtim_out),
     .a (execute_in_a),
     .d (execute_in_d),
     .y (execute_out_y),
