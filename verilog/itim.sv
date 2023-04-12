@@ -134,7 +134,7 @@ module itim_ctrl
     logic [0:0] fence;
     logic [0:0] align;
     logic [0:0] wen;
-    logic [0:0] cen;
+    logic [0:0] en;
     logic [0:0] inv;
     logic [0:0] clear;
     logic [0:0] hit;
@@ -173,7 +173,7 @@ module itim_ctrl
     fence : 0,
     align : 0,
     wen : 0,
-    cen : 0,
+    en : 0,
     inv : 0,
     clear : 0,
     hit : 0,
@@ -222,7 +222,7 @@ module itim_ctrl
     v_b.fence = 0;
     v_b.lock = 0;
     v_b.wen = 0;
-    v_b.cen = 0;
+    v_b.en = 0;
     v_b.inv = 0;
     v_b.clear = 0;
     v_b.hit = 0;
@@ -275,7 +275,6 @@ module itim_ctrl
           end
           if (v_b.clear == 1) begin
             v_b.state = fence;
-            v_b.cen = 1;
             v_b.inv = 1;
             v_b.did = 0;
             v_b.valid = 0;
@@ -391,12 +390,12 @@ module itim_ctrl
         begin
           if (&(v_b.did) == 1) begin
             v_b.state = hit;
-            v_b.cen = 0;
             v_b.inv = 1;
+            v_b.en = 0;
             v_b.did = 0;
           end else begin
-            v_b.cen = 1;
             v_b.inv = 1;
+            v_b.en = 1;
             v_b.did = v_b.did + 1;
           end
         end
@@ -416,7 +415,7 @@ module itim_ctrl
 
     if (v_b.inv == 1) begin
       for (int i=0; i<itim_width; i=i+1) begin
-        ivec_in[i].wen = v_b.wen;
+        ivec_in[i].wen = v_b.en;
         ivec_in[i].waddr = v_b.did;
         ivec_in[i].wdata = 0;
       end
