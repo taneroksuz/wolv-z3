@@ -13,11 +13,6 @@ package configure;
   parameter dtim_width = 4;
   parameter dtim_depth = 512;
 
-  parameter bp_enable = 1;
-  parameter btb_depth = 6;
-  parameter bht_depth = 6;
-  parameter ras_depth = 2;
-
   parameter rom_base_addr = 32'h0;
   parameter rom_top_addr  = 32'h80;
 

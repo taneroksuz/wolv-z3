@@ -16,11 +16,6 @@ package configure;
   parameter dtim_width = 4;
   parameter dtim_depth = 8192;
 
-  parameter bp_enable = 1;
-  parameter btb_depth = 6;
-  parameter bht_depth = 6;
-  parameter ras_depth = 2;
-
   parameter bram_base_addr = 32'h000000;
   parameter bram_top_addr  = 32'h100000;
 
