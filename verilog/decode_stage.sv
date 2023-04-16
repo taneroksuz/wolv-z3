@@ -20,6 +20,7 @@ module decode_stage
   output csr_decode_in_type csr_din,
   input forwarding_out_type forwarding_out,
   output forwarding_register_in_type forwarding_rin,
+  input mem_out_type imem_out,
   output mem_in_type dmem_in,
   input decode_in_type a,
   input decode_in_type d,
@@ -37,18 +38,26 @@ module decode_stage
     v = r;
 
     v.pc = d.f.pc;
-    v.instr = d.f.instr;
-    v.exception = d.f.exception;
-    v.ecause = d.f.ecause;
-    v.etval = d.f.etval;
 
-    if ((d.d.stall | d.e.stall) == 1) begin
-      v = r;
+    //if ((d.d.stall | d.e.stall) == 1) begin
+    //  v = r;
+    //end
+
+    v.clear = csr_out.trap | csr_out.mret | d.d.jump | d.e.clear;
+
+    if (imem_out.mem_ready == 1) begin
+      v.instr = imem_out.mem_rdata;
+      v.stall = 0;
+      if (v.busy == 1) begin
+        v.instr = nop_instr;
+        v.stall = 1;
+        v.busy = 0;
+      end
+    end else begin
+      v.instr = nop_instr;
+      v.stall = 1;
+      v.busy = v.clear;
     end
-
-    v.clear = d.d.jump | d.d.exception | d.d.mret | d.e.clear;
-
-    v.stall = 0;
 
     v.waddr = v.instr[11:7];
     v.raddr1 = v.instr[19:15];
@@ -112,7 +121,9 @@ module decode_stage
       v.valid = compress_out.valid;
     end
 
-    v.npc = v.pc + ((v.instr[1:0] == 2'b11) ? 4 : 2);
+    if (v.stall == 0) begin
+      v.npc = v.pc + ((v.instr[1:0] == 2'b11) ? 4 : 2);
+    end
 
     register_rin.rden1 = v.rden1;
     register_rin.rden2 = v.rden2;
@@ -188,7 +199,7 @@ module decode_stage
       v.stall = 1;
     end
 
-    if ((v.stall | a.e.stall | v.clear | csr_out.trap | csr_out.mret) == 1) begin
+    if ((v.stall | a.e.stall | v.clear) == 1) begin
       v.wren = 0;
       v.cwren = 0;
       v.auipc = 0;
