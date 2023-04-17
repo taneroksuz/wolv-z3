@@ -24,26 +24,32 @@ module fetch_stage
     v = r;
 
     v.valid = ~d.e.clear;
+    v.stall = a.d.stall | a.e.stall;
 
     if (csr_out.trap == 1) begin
+      v.fence = 0;
       v.spec = 1;
       v.pc = csr_out.mtvec;
     end else if (csr_out.mret == 1) begin
+      v.fence = 0;
       v.spec = 1;
       v.pc = csr_out.mepc;
     end else if (d.d.jump == 1) begin
+      v.fence = 0;
       v.spec = 1;
       v.pc = d.d.address;
     end else if (d.d.fence == 1) begin
+      v.fence = 1;
       v.spec = 1;
       v.pc = d.d.npc;
-    end else if ((v.stall | a.d.stall | a.e.stall) == 0) begin
+    end else if (v.stall == 0) begin
+      v.fence = 0;
       v.spec = 0;
       v.pc = a.d.npc;
     end
 
     imem_in.mem_valid = v.valid;
-    imem_in.mem_fence = d.d.fence;
+    imem_in.mem_fence = v.fence;
     imem_in.mem_spec = v.spec;
     imem_in.mem_instr = 1;
     imem_in.mem_addr = v.pc;
