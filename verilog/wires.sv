@@ -645,10 +645,13 @@ package wires;
   };
 
   typedef struct packed{
+    logic [31 : 0] pc;
+    logic [31 : 0] npc;
     logic [0  : 0] cwren;
     logic [0  : 0] division;
     logic [0  : 0] bitm;
     logic [0  : 0] bitc;
+    logic [0  : 0] fence;
     logic [0  : 0] stall;
     logic [0  : 0] clear;
   } execute_out_type;

@@ -26,6 +26,9 @@ module fetch_stage
     v.valid = ~d.e.clear;
     v.stall = a.d.stall | a.e.stall;
 
+    v.fence = 0;
+    v.spec = 0;
+
     if (csr_out.trap == 1) begin
       v.fence = 0;
       v.spec = 1;
@@ -38,10 +41,10 @@ module fetch_stage
       v.fence = 0;
       v.spec = 1;
       v.pc = d.d.address;
-    end else if (d.d.fence == 1) begin
+    end else if (d.e.fence == 1) begin
       v.fence = 1;
       v.spec = 1;
-      v.pc = d.d.npc;
+      v.pc = d.e.npc;
     end else if (v.stall == 0) begin
       v.fence = 0;
       v.spec = 0;
