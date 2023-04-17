@@ -467,7 +467,6 @@ package wires;
 
   typedef struct packed{
     logic [31 : 0] pc;
-    logic [0  : 0] stall;
   } fetch_out_type;
 
   typedef struct packed{
