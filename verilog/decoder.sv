@@ -119,6 +119,7 @@ module decoder
     division = 0;
     mult = 0;
     bitm = 0;
+    bitc = 0;
     fence = 0;
     ecall = 0;
     ebreak = 0;

@@ -87,6 +87,7 @@ module decode_stage
     v.division = decoder_out.division;
     v.mult = decoder_out.mult;
     v.bitm = decoder_out.bitm;
+    v.bitc = decoder_out.bitc;
     v.alu_op = decoder_out.alu_op;
     v.bcu_op = decoder_out.bcu_op;
     v.lsu_op = decoder_out.lsu_op;
@@ -270,6 +271,7 @@ module decode_stage
     y.division = v.division;
     y.mult = v.mult;
     y.bitm = v.bitm;
+    y.bitc = v.bitc;
     y.fence = v.fence;
     y.ecall = v.ecall;
     y.ebreak = v.ebreak;
@@ -318,6 +320,7 @@ module decode_stage
     q.division = r.division;
     q.mult = r.mult;
     q.bitm = r.bitm;
+    q.bitc = r.bitc;
     q.fence = r.fence;
     q.ecall = r.ecall;
     q.ebreak = r.ebreak;

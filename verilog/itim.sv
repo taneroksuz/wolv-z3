@@ -405,9 +405,19 @@ module itim_ctrl
           v_b.ready = 0;
         end
     endcase
+    
+    for (int i=0; i<itim_width; i=i+1) begin
+      ivec_in[i].raddr = 0;
+    end
 
     ivec_in[rin_f.wid1].raddr = rin_f.did1;
     ivec_in[rin_f.wid2].raddr = rin_f.did2;
+    
+    for (int i=0; i<itim_width; i=i+1) begin
+      ivec_in[i].wen = 0;
+      ivec_in[i].waddr = 0;
+      ivec_in[i].wdata = 0;
+    end
 
     ivec_in[v_b.wid].wen = v_b.wen;
     ivec_in[v_b.wid].waddr = v_b.did;
@@ -471,7 +481,7 @@ module itim
       itim_vec_in_type ivec_in;
       itim_vec_out_type ivec_out;
 
-      for (i=0; i<itim_width; i=i+1) begin
+      for (i=0; i<itim_width; i=i+1) begin : itim_ram
         itim_ram itim_ram_comp
         (
           .clock (clock),

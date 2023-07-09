@@ -367,6 +367,10 @@ module dtim_ctrl
         begin
         end
     endcase
+    
+    for (int i=0; i<dtim_width; i=i+1) begin
+      dvec_in[i].raddr = 0;
+    end
 
     dvec_in[rin_f.wid].raddr = rin_f.did;
 
@@ -374,6 +378,12 @@ module dtim_ctrl
       for (int i=0; i<dtim_width; i=i+1) begin
         dvec_in[i].raddr = v_b.did;
       end
+    end
+    
+    for (int i=0; i<dtim_width; i=i+1) begin
+      dvec_in[i].wen = 0;
+      dvec_in[i].waddr = 0;
+      dvec_in[i].wdata = 0;
     end
 
     dvec_in[v_b.wid].wen = v_b.wen;
@@ -444,7 +454,7 @@ module dtim
       dtim_vec_in_type dvec_in;
       dtim_vec_out_type dvec_out;
 
-      for (i=0; i<dtim_width; i=i+1) begin
+      for (i=0; i<dtim_width; i=i+1) begin : dtim_ram
         dtim_ram dtim_ram_comp
         (
           .clock (clock),
