@@ -225,7 +225,6 @@ module itim_ctrl
             v_b.state = load;
             v_b.valid = 1;
             v_b.addr = v_b.addr;
-            v_b.ready = ~(&(v_b.rdata[1:0]));
           end else if (v_b.hit == 1) begin
             v_b.valid = 0;
             v_b.rdata = v_b.idata;
