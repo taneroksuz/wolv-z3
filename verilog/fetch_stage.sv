@@ -37,28 +37,28 @@ module fetch_stage
 
     v.pc = buffer_out.pc;
     v.instr = buffer_out.instr;
-    v.ready = buffer_out.ready;
+    v.done = buffer_out.done;
 
     if (csr_out.trap == 1) begin
       v.fence = 0;
       v.spec = 1;
-      v.pc = csr_out.mtvec;
+      v.addr = csr_out.mtvec;
     end else if (csr_out.mret == 1) begin
       v.fence = 0;
       v.spec = 1;
-      v.pc = csr_out.mepc;
+      v.addr = csr_out.mepc;
     end else if (d.d.jump == 1) begin
       v.fence = 0;
       v.spec = 1;
-      v.pc = d.d.address;
+      v.addr = d.d.address;
     end else if (d.e.fence == 1) begin
       v.fence = 1;
       v.spec = 1;
-      v.pc = d.e.npc;
+      v.addr = d.e.npc;
     end else if (v.stall == 0) begin
       v.fence = 0;
       v.spec = 0;
-      v.pc = v.pc + 4;
+      v.addr = v.addr + 4;
     end
 
     buffer_in.pc = {r.pc[31:2],2'b00};
@@ -72,7 +72,7 @@ module fetch_stage
     imem_in.mem_fence = v.fence;
     imem_in.mem_spec = v.spec;
     imem_in.mem_instr = 1;
-    imem_in.mem_addr = v.pc;
+    imem_in.mem_addr = v.addr;
     imem_in.mem_wdata = 0;
     imem_in.mem_wstrb = 0;
 
@@ -80,11 +80,11 @@ module fetch_stage
 
     y.pc = v.pc;
     y.instr = v.instr;
-    y.ready = v.ready;
+    y.done = v.done;
 
     q.pc = r.pc;
     q.instr = r.instr;
-    q.ready = r.ready;
+    q.done = r.done;
 
   end
 

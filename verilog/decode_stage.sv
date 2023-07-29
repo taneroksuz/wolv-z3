@@ -36,8 +36,9 @@ module decode_stage
 
     v = r;
     
-    v.pc = a.f.ready ? a.f.pc : 0;
-    v.instr = a.f.ready ? a.f.instr : 0;
+    v.pc = a.f.done ? a.f.pc : 0;
+    v.instr = a.f.done ? a.f.instr : 0;
+
     v.npc = v.pc + ((&v.instr[1:0]) ? 4 : 2);
 
     v.clear = csr_out.trap | csr_out.mret | d.e.fence | d.d.jump | d.e.clear;

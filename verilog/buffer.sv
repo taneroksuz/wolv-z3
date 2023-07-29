@@ -31,7 +31,7 @@ module buffer
     logic [31 : 0] pc;
     logic [31 : 0] instr;
     logic [0 : 0] comp;
-    logic [0 : 0] ready;
+    logic [0 : 0] done;
     logic [0 : 0] stall;
   } reg_type;
 
@@ -46,7 +46,7 @@ module buffer
     pc : 0,
     instr : 0,
     comp : 0,
-    ready : 0,
+    done : 0,
     stall : 0
   };
 
@@ -82,7 +82,7 @@ module buffer
 
     v.comp = 0;
 
-    v.ready = 0;
+    v.done = 0;
 
     v.diff = 0;
 
@@ -90,19 +90,19 @@ module buffer
       v.pc = v.data0[47:16];
       v.instr[15:0] = v.data0[15:0];
       v.comp = ~(&v.data0[1:0]);
-      v.ready = v.comp;
+      v.done = v.comp;
       v.diff = v.comp ? 1 : 0;
     end
     if (v.count > v.align+1) begin
       if (v.comp == 0) begin
         v.instr[31:16] = v.data1[15:0];
-        v.ready = 1;
+        v.done = 1;
         v.diff = 2;
       end
     end
 
     if (buffer_in.stall == 1) begin
-      v.ready = 0;
+      v.done = 0;
       v.diff = 0;
     end
 
@@ -115,9 +115,9 @@ module buffer
       v.stall = 1;
     end
 
-    buffer_out.pc = v.ready ? v.pc : 0;
-    buffer_out.instr = v.ready ? v.instr : 0;
-    buffer_out.ready = v.ready;
+    buffer_out.pc = v.done ? v.pc : 0;
+    buffer_out.instr = v.done ? v.instr : 0;
+    buffer_out.done = v.done;
     buffer_out.stall = v.stall;
 
     rin = v;
