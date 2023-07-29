@@ -270,9 +270,7 @@ module cpu
     .q (execute_out_q)
   );
 
-  itim#(
-    .itim_enable (itim_enable)
-  ) itim_comp
+  itim itim_comp
   (
     .reset (reset),
     .clock (clock),
@@ -282,9 +280,7 @@ module cpu
     .imem_in (imem_in)
   );
 
-  dtim#(
-    .dtim_enable (dtim_enable)
-  ) dtim_comp
+  dtim dtim_comp
   (
     .reset (reset),
     .clock (clock),

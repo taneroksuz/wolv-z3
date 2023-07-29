@@ -431,9 +431,6 @@ module dtim_ctrl
 endmodule
 
 module dtim
-#(
-  parameter dtim_enable = 1
-)
 (
   input logic reset,
   input logic clock,
@@ -445,43 +442,34 @@ module dtim
   timeunit 1ns;
   timeprecision 1ps;
 
+  dtim_vec_in_type dvec_in;
+  dtim_vec_out_type dvec_out;
+
   generate
 
     genvar i;
 
-    if (dtim_enable == 1) begin
-
-      dtim_vec_in_type dvec_in;
-      dtim_vec_out_type dvec_out;
-
-      for (i=0; i<dtim_width; i=i+1) begin : dtim_ram
-        dtim_ram dtim_ram_comp
-        (
-          .clock (clock),
-          .dtim_ram_in (dvec_in[i]),
-          .dtim_ram_out (dvec_out[i])
-        );
-      end
-
-      dtim_ctrl dtim_ctrl_comp
+    for (i=0; i<dtim_width; i=i+1) begin : dtim_ram
+      dtim_ram dtim_ram_comp
       (
-        .reset (reset),
         .clock (clock),
-        .dvec_out (dvec_out),
-        .dvec_in (dvec_in),
-        .dtim_in (dtim_in),
-        .dtim_out (dtim_out),
-        .dmem_out (dmem_out),
-        .dmem_in (dmem_in)
+        .dtim_ram_in (dvec_in[i]),
+        .dtim_ram_out (dvec_out[i])
       );
-
-    end else begin
-
-      assign dmem_in = dtim_in;
-      assign dtim_out = dmem_out;
-
     end
 
   endgenerate
+
+  dtim_ctrl dtim_ctrl_comp
+  (
+    .reset (reset),
+    .clock (clock),
+    .dvec_out (dvec_out),
+    .dvec_in (dvec_in),
+    .dtim_in (dtim_in),
+    .dtim_out (dtim_out),
+    .dmem_out (dmem_out),
+    .dmem_in (dmem_in)
+  );
 
 endmodule
