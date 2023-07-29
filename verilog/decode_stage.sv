@@ -37,7 +37,7 @@ module decode_stage
     v = r;
     
     v.pc = a.f.done ? a.f.pc : 0;
-    v.instr = a.f.done ? a.f.instr : 0;
+    v.instr = a.f.done ? a.f.instr : nop_instr;
 
     v.npc = v.pc + ((&v.instr[1:0]) ? 4 : 2);
 
