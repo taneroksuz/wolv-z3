@@ -35,12 +35,10 @@ module decode_stage
   always_comb begin
 
     v = r;
-
-    v.pc = d.f.pc;
-
-    //if ((d.d.stall | d.e.stall) == 1) begin
-    //  v = r;
-    //end
+    
+    v.pc = a.f.ready ? a.f.pc : 0;
+    v.instr = a.f.ready ? a.f.instr : 0;
+    v.npc = v.pc + ((&v.instr[1:0]) ? 4 : 2);
 
     v.clear = csr_out.trap | csr_out.mret | d.e.fence | d.d.jump | d.e.clear;
 
@@ -105,10 +103,6 @@ module decode_stage
       v.lsu_op = compress_out.lsu_op;
       v.ebreak = compress_out.ebreak;
       v.valid = compress_out.valid;
-    end
-
-    if (v.stall == 0) begin
-      v.npc = v.pc + ((v.instr[1:0] == 2'b11) ? 4 : 2);
     end
 
     register_rin.rden1 = v.rden1;
