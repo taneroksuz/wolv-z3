@@ -489,6 +489,7 @@ package wires;
 
   typedef struct packed{
     logic [31 : 0] pc;
+    logic [31 : 0] instr;
     logic [31 : 0] rdata;
     logic [0  : 0] ready;
     logic [0  : 0] valid;
@@ -499,6 +500,7 @@ package wires;
 
   parameter fetch_reg_type init_fetch_reg = '{
     pc : 0,
+    instr : 0,
     rdata : 0,
     ready : 0,
     valid : 0,

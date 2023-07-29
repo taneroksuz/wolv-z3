@@ -27,10 +27,17 @@ module fetch_stage
     v = r;
 
     v.valid = 0;
-    v.stall = a.d.stall | a.e.stall;
+    v.stall = buffer_out.stall;
 
     v.fence = 0;
     v.spec = 0;
+    
+    v.rdata = imem_out.mem_rdata;
+    v.ready = imem_out.mem_ready;
+
+    v.pc = buffer_out.pc;
+    v.instr = buffer_out.instr;
+    v.ready = buffer_out.ready;
 
     if (csr_out.trap == 1) begin
       v.fence = 0;
@@ -54,6 +61,13 @@ module fetch_stage
       v.pc = v.pc + 4;
     end
 
+    buffer_in.pc = {r.pc[31:2],2'b00};
+    buffer_in.rdata = v.rdata;
+    buffer_in.ready = v.ready;
+    buffer_in.align = v.pc[1];
+    buffer_in.clear = v.spec;
+    buffer_in.stall = a.d.stall | a.e.stall;
+
     imem_in.mem_valid = v.valid;
     imem_in.mem_fence = v.fence;
     imem_in.mem_spec = v.spec;
@@ -65,8 +79,12 @@ module fetch_stage
     rin = v;
 
     y.pc = v.pc;
+    y.instr = v.instr;
+    y.ready = v.ready;
 
     q.pc = r.pc;
+    q.instr = r.instr;
+    q.ready = r.ready;
 
   end
 
