@@ -2,8 +2,7 @@ package configure;
   timeunit 1ns;
   timeprecision 1ps;
 
-  parameter fetchbuffer_depth = 4;
-  parameter storebuffer_depth = 4;
+  parameter buffer_depth = 16;
 
   parameter itim_width = 4;
   parameter itim_depth = 128;

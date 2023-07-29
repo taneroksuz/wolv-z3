@@ -20,7 +20,6 @@ module decode_stage
   output csr_decode_in_type csr_din,
   input forwarding_out_type forwarding_out,
   output forwarding_register_in_type forwarding_rin,
-  input mem_out_type imem_out,
   output mem_in_type dmem_in,
   input decode_in_type a,
   input decode_in_type d,
@@ -44,23 +43,6 @@ module decode_stage
     //end
 
     v.clear = csr_out.trap | csr_out.mret | d.e.fence | d.d.jump | d.e.clear;
-
-    if (imem_out.mem_ready == 1) begin
-      v.instr = imem_out.mem_rdata;
-      v.stall = 0;
-      if (v.busy == 1) begin
-        v.instr = nop_instr;
-        v.stall = 1;
-        v.busy = 0;
-      end
-    end else if (v.busy == 0) begin
-      v.instr = nop_instr;
-      v.stall = 1;
-      v.busy = v.clear;
-    end else begin
-      v.instr = nop_instr;
-      v.stall = 1;
-    end
 
     v.waddr = v.instr[11:7];
     v.raddr1 = v.instr[19:15];

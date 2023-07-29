@@ -44,6 +44,8 @@ module cpu
   bit_alu_out_type bit_alu_out;
   bit_clmul_in_type bit_clmul_in;
   bit_clmul_out_type bit_clmul_out;
+  buffer_in_type buffer_in;
+  buffer_out_type buffer_out;
   decoder_in_type decoder_in;
   decoder_out_type decoder_out;
   compress_in_type compress_in;
@@ -169,6 +171,14 @@ module cpu
     .forwarding_out (forwarding_out)
   );
 
+  buffer buffer_comp
+  (
+    .reset (reset),
+    .clock (clock),
+    .buffer_in (buffer_in),
+    .buffer_out (buffer_out)
+  );
+
   decoder decoder_comp
   (
     .decoder_in (decoder_in),
@@ -207,7 +217,10 @@ module cpu
   (
     .reset (reset),
     .clock (clock),
+    .buffer_out (buffer_out),
+    .buffer_in (buffer_in),
     .csr_out (csr_out),
+    .imem_out (itim_out),
     .imem_in (itim_in),
     .a (fetch_in_a),
     .d (fetch_in_d),
@@ -233,7 +246,6 @@ module cpu
     .forwarding_rin (forwarding_rin),
     .csr_out (csr_out),
     .csr_din (csr_din),
-    .imem_out (itim_out),
     .dmem_in (dtim_in),
     .a (decode_in_a),
     .d (decode_in_d),

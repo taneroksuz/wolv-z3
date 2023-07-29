@@ -6,7 +6,10 @@ module fetch_stage
 (
   input logic reset,
   input logic clock,
+  input buffer_out_type buffer_out,
+  output buffer_in_type buffer_in,
   input csr_out_type csr_out,
+  input mem_out_type imem_out,
   output mem_in_type imem_in,
   input fetch_in_type a,
   input fetch_in_type d,
@@ -23,7 +26,7 @@ module fetch_stage
 
     v = r;
 
-    v.valid = ~d.e.clear;
+    v.valid = 0;
     v.stall = a.d.stall | a.e.stall;
 
     v.fence = 0;
@@ -48,7 +51,7 @@ module fetch_stage
     end else if (v.stall == 0) begin
       v.fence = 0;
       v.spec = 0;
-      v.pc = a.d.npc;
+      v.pc = v.pc + 4;
     end
 
     imem_in.mem_valid = v.valid;
