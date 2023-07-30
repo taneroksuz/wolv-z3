@@ -41,6 +41,8 @@ module decode_stage
 
     v.npc = v.pc + ((&v.instr[1:0]) ? 4 : 2);
 
+    v.stall = 0;
+
     v.clear = csr_out.trap | csr_out.mret | d.e.fence | d.d.jump | d.e.clear;
 
     v.waddr = v.instr[11:7];

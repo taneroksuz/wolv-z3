@@ -259,6 +259,7 @@ module itim_ctrl
             v_b.inv = 1;
             v_b.en = 0;
             v_b.did = 0;
+            v_b.ready = 1;
           end else begin
             v_b.inv = 1;
             v_b.en = 1;
