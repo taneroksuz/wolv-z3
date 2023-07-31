@@ -5,6 +5,7 @@ package configure;
 
   parameter buffer_depth = 16;
 
+  parameter bram_cycle = 0;
   parameter bram_depth = 262144;
 
   parameter itim_width = 4;
