@@ -71,8 +71,6 @@ module cpu
   fetch_out_type fetch_out_q;
   decode_out_type decode_out_q;
   execute_out_type execute_out_q;
-  mem_in_type fetchbuffer_in;
-  mem_out_type fetchbuffer_out;
   mem_in_type storebuffer_in;
   mem_out_type storebuffer_out;
   mem_in_type itim_in;
