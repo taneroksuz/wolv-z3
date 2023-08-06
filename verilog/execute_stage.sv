@@ -47,7 +47,7 @@ module execute_stage
     end
 
     v.stall = 0;
-    v.clear = csr_out.trap | csr_out.mret | d.e.instr.op.fence | d.e.clear;
+    v.clear = csr_out.trap | csr_out.mret | d.e.clear;
     v.enable = ~(d.e.stall | v.clear);
 
     alu_in.rdata1 = v.instr.rdata1;
