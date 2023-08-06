@@ -110,16 +110,19 @@ module soc();
   always #0.5 clock = ~clock;
 
   initial begin
-    reg_file = $fopen("register.txt","w");
-    for (int i=0; i<stoptime; i=i+1) begin
-      @(posedge clock);
-      if (soc.cpu_comp.register_comp.register_win.wren == 1) begin
-        $fwrite(reg_file,"PERIOD = %t\t",$time);
-        $fwrite(reg_file,"WADDR = %d\t",soc.cpu_comp.register_comp.register_win.waddr);
-        $fwrite(reg_file,"WDATA = %x\n",soc.cpu_comp.register_comp.register_win.wdata);
+    string filename;
+    if ($value$plusargs("REGFILE=%s",filename)) begin
+      reg_file = $fopen(filename,"w");
+      for (int i=0; i<stoptime; i=i+1) begin
+        @(posedge clock);
+        if (soc.cpu_comp.register_comp.register_win.wren == 1) begin
+          $fwrite(reg_file,"PERIOD = %t\t",$time);
+          $fwrite(reg_file,"WADDR = %d\t",soc.cpu_comp.register_comp.register_win.waddr);
+          $fwrite(reg_file,"WDATA = %x\n",soc.cpu_comp.register_comp.register_win.wdata);
+        end
       end
+      $fclose(reg_file);
     end
-    $fclose(reg_file); 
   end
 
   always_ff @(posedge clock) begin
