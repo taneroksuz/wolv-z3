@@ -3,7 +3,7 @@ package configure;
   timeunit 1ns;
   timeprecision 1ps;
 
-  parameter buffer_depth = 16;
+  parameter buffer_depth = 8;
 
   parameter bram_cycle = 0;
   parameter bram_depth = 262144;

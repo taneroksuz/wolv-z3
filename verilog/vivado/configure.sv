@@ -2,7 +2,7 @@ package configure;
   timeunit 1ns;
   timeprecision 1ps;
 
-  parameter buffer_depth = 16;
+  parameter buffer_depth = 8;
 
   parameter itim_width = 4;
   parameter itim_depth = 512;
