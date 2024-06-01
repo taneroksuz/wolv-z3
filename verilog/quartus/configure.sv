@@ -4,11 +4,8 @@ package configure;
 
   parameter buffer_depth = 8;
 
-  parameter itim_width = 4;
-  parameter itim_depth = 128;
-
-  parameter dtim_width = 4;
-  parameter dtim_depth = 128;
+  parameter tim_width = 32;
+  parameter tim_depth = 128;
 
   parameter rom_base_addr = 32'h0;
   parameter rom_top_addr  = 32'h80;
@@ -22,11 +19,11 @@ package configure;
   parameter avl_base_addr = 32'h80000000;
   parameter avl_top_addr  = 32'h90000000;
 
-  parameter itim_base_addr = 32'h80000000;
-  parameter itim_top_addr  = 32'h90000000;
+  parameter itim_base_addr = 32'h10000000;
+  parameter itim_top_addr  = 32'h10004000;
 
-  parameter dtim_base_addr = 32'h80000000;
-  parameter dtim_top_addr  = 32'h90000000;
+  parameter dtim_base_addr = 32'h20000000;
+  parameter dtim_top_addr  = 32'h20004000;
 
   parameter clk_freq = 25000000; // 25MHz
   parameter rtc_freq = 32768; // 32768Hz

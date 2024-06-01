@@ -5,14 +5,11 @@ package configure;
 
   parameter buffer_depth = 8;
 
-  parameter bram_cycle = 0;
-  parameter bram_depth = 262144;
+  parameter tim_width = 32;
+  parameter tim_depth = 8192;
 
-  parameter itim_width = 4;
-  parameter itim_depth = 8192;
-
-  parameter dtim_width = 4;
-  parameter dtim_depth = 8192;
+  parameter ram_cycle = 0;
+  parameter ram_depth = 262144;
 
   parameter rom_base_addr = 32'h0;
   parameter rom_top_addr  = 32'h80;
@@ -23,14 +20,14 @@ package configure;
   parameter clint_base_addr = 32'h2000000;
   parameter clint_top_addr  = 32'h200C000;
 
-  parameter bram_base_addr = 32'h80000000;
-  parameter bram_top_addr  = 32'h90000000;
+  parameter itim_base_addr = 32'h10000000;
+  parameter itim_top_addr  = 32'h10100000;
 
-  parameter itim_base_addr = 32'h80000000;
-  parameter itim_top_addr  = 32'h90000000;
+  parameter dtim_base_addr = 32'h20000000;
+  parameter dtim_top_addr  = 32'h20100000;
 
-  parameter dtim_base_addr = 32'h80000000;
-  parameter dtim_top_addr  = 32'h90000000;
+  parameter ram_base_addr = 32'h80000000;
+  parameter ram_top_addr  = 32'h90000000;
 
   parameter clk_freq = 1000000000; // 1GHz
   parameter rtc_freq = 100000000; // 100MHz
